@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { days } from "@/data/trip";
+import { days, ALL_DAY_INDEX } from "@/data/trip";
 
-const DAY_COLORS = ["#c9a96e", "#7eb8e0", "#e0a07e"];
+const DAY_COLORS = ["#c9a96e", "#7eb8e0", "#e0a07e", "#a89fbf"];
 
 interface DayTabsProps {
   activeDay: number;
@@ -26,17 +26,19 @@ export default function DayTabs({
     <div
       className={
         compact
-          ? "flex rounded-full glass-strong glow-gold p-1 gap-0.5 w-full max-w-[min(100%,20rem)]"
+          ? "flex rounded-full glass-strong glow-gold p-1 gap-0.5 w-full max-w-[min(100%,24rem)]"
           : "flex rounded-xl glass p-1 gap-1"
       }
     >
-      {days.map((day, i) => {
+      {Array.from({ length: ALL_DAY_INDEX + 1 }, (_, i) => {
         const isActive = activeDay === i;
-        const color = DAY_COLORS[i];
+        const color = DAY_COLORS[i] ?? DAY_COLORS[0];
+        const isAll = i === ALL_DAY_INDEX;
+        const day = !isAll ? days[i] : null;
 
         return (
           <button
-            key={day.date}
+            key={isAll ? "all" : day!.date}
             type="button"
             onClick={() => onChange(i)}
             className={`relative flex-1 text-center transition-colors duration-200 ${
@@ -62,17 +64,25 @@ export default function DayTabs({
                 }`}
                 style={{ color: isActive ? color : undefined }}
               >
-                {isActive ? undefined : <span className="text-text-muted">{day.label}</span>}
-                {isActive && day.label}
+                {isActive ? undefined : (
+                  <span className="text-text-muted">{isAll ? "ALL" : day!.label}</span>
+                )}
+                {isActive && (isAll ? "ALL" : day!.label)}
               </span>
               <span
                 className={`tabular-nums ${compact ? "text-[10px]" : "text-[11px]"}`}
                 style={{ color: isActive ? `${color}bb` : undefined }}
               >
-                {isActive ? (
-                  <>{day.date.split("-")[2]}. Mai</>
+                {isAll ? (
+                  isActive ? (
+                    <span className="opacity-80">Alle</span>
+                  ) : (
+                    <span className="text-text-muted/50">·</span>
+                  )
+                ) : isActive ? (
+                  <>{day!.date.split("-")[2]}. Mai</>
                 ) : (
-                  <span className="text-text-muted/50">{day.date.split("-")[2]}.05</span>
+                  <span className="text-text-muted/50">{day!.date.split("-")[2]}.05</span>
                 )}
               </span>
             </span>

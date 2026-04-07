@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, ExternalLink, X, Camera } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Polyline, CircleMarker, Tooltip, useMap, ZoomControl } from "react-leaflet";
 import L from "leaflet";
-import { locations, days, getLocation } from "@/data/trip";
+import { locations, days, getLocation, getUniqueVisitedPoisInOrder, ALL_DAY_INDEX } from "@/data/trip";
 import type { Location } from "@/data/trip";
 import walkingRoutes from "@/data/walking-routes.json";
 import metroRoutes from "@/data/metro-routes.json";
@@ -29,7 +29,7 @@ const MAP_STYLES = {
 
 type MapStyle = keyof typeof MAP_STYLES;
 
-const DAY_COLORS = ["#c9a96e", "#7eb8e0", "#e0a07e"];
+const DAY_COLORS = ["#c9a96e", "#7eb8e0", "#e0a07e", "#a89fbf"];
 const HOVER_COLOR = "#FF2D78";
 const DAY_KEY_MAP = ["friday", "saturday", "sunday"];
 
@@ -41,7 +41,8 @@ const STAGE_PALETTES: string[][] = [
   // Sunday: same principle
   ["#FB7185", "#2DD4BF", "#FCD34D", "#A78BFA", "#38BDF8"],
 ];
-const DAY_LABELS = ["Vendredi", "Samedi", "Dimanche"];
+const DAY_LABELS = ["Vendredi", "Samedi", "Dimanche", "ALL"];
+const ALL_MAP_ACCENT = "#c9a96e";
 
 const CATEGORY_SVGS: Record<string, string> = {
   hotel: `<svg viewBox="0 0 24 24" fill="none" stroke="CCC" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M3 7v14M21 7v14M6 11h4v4H6zM14 11h4v4h-4zM9 3h6l3 4H6l3-4z"/></svg>`,
@@ -110,6 +111,17 @@ function getMarkersForDay(dayIndex: number): MarkerInfo[] {
   });
 
   return Array.from(markerMap.values());
+}
+
+function getMarkersForAllDays(): MarkerInfo[] {
+  return getUniqueVisitedPoisInOrder().map((loc, idx) => ({
+    location: loc,
+    visitNumbers: [idx + 1],
+  }));
+}
+
+function getUniqueLocationsForAllDays(): Location[] {
+  return getUniqueVisitedPoisInOrder();
 }
 
 function getVisitNumberForEvent(dayIndex: number, eventIndex: number): number | null {
@@ -268,6 +280,9 @@ function getFitOptions(dayIndex: number | null): { padding: [number, number]; ma
   if (dayIndex === 1 || dayIndex === 2) {
     return { padding: [18, 18], maxZoom: 16, singleZoom: 14 };
   }
+  if (dayIndex === ALL_DAY_INDEX) {
+    return { padding: [28, 28], maxZoom: 14, singleZoom: 13 };
+  }
   return { padding: [24, 24], maxZoom: 15, singleZoom: 13 };
 }
 
@@ -314,22 +329,25 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [mapStyle, setMapStyle] = useState<MapStyle>("dark");
 
-  const markers = useMemo(
-    () => (activeDay !== null ? getMarkersForDay(activeDay) : locations.map(l => ({ location: l, visitNumbers: [] as number[] }))),
-    [activeDay]
-  );
+  const markers = useMemo(() => {
+    if (activeDay === ALL_DAY_INDEX) return getMarkersForAllDays();
+    return activeDay !== null
+      ? getMarkersForDay(activeDay)
+      : locations.map((l) => ({ location: l, visitNumbers: [] as number[] }));
+  }, [activeDay]);
 
-  const uniqueLocations = useMemo(
-    () => (activeDay !== null ? getUniqueLocationsForDay(activeDay) : locations),
-    [activeDay]
-  );
+  const uniqueLocations = useMemo(() => {
+    if (activeDay === ALL_DAY_INDEX) return getUniqueLocationsForAllDays();
+    return activeDay !== null ? getUniqueLocationsForDay(activeDay) : locations;
+  }, [activeDay]);
 
-  const segments = useMemo(
-    () => (activeDay !== null ? getSegmentsForDay(activeDay) : []),
-    [activeDay]
-  );
+  const segments = useMemo(() => {
+    if (activeDay === ALL_DAY_INDEX) return [];
+    return activeDay !== null ? getSegmentsForDay(activeDay) : [];
+  }, [activeDay]);
 
-  const color = activeDay !== null ? DAY_COLORS[activeDay] : DAY_COLORS[0];
+  const color =
+    activeDay === ALL_DAY_INDEX ? ALL_MAP_ACCENT : activeDay !== null ? DAY_COLORS[activeDay] : DAY_COLORS[0];
 
   const center = useMemo((): [number, number] => {
     if (uniqueLocations.length > 0) {
@@ -418,8 +436,10 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
 
             {/* Route segments between stops */}
             {(() => {
-              const palette = activeDay !== null ? STAGE_PALETTES[activeDay] : STAGE_PALETTES[0];
-              const dayKeyForRoutes = activeDay !== null ? DAY_KEY_MAP[activeDay] : null;
+              const palette =
+                activeDay !== null && activeDay !== ALL_DAY_INDEX ? STAGE_PALETTES[activeDay] : STAGE_PALETTES[0];
+              const dayKeyForRoutes =
+                activeDay !== null && activeDay !== ALL_DAY_INDEX ? DAY_KEY_MAP[activeDay] : null;
               let walkColorIdx = 0;
 
               const segColors: { stageColor: string; exitWalkColor: string | null }[] = segments.map((seg) => {
@@ -464,7 +484,8 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
               const stageColor = segColors[i].stageColor;
               const exitWalkStageColor = segColors[i].exitWalkColor;
 
-              const dayKey = activeDay !== null ? DAY_KEY_MAP[activeDay] : null;
+              const dayKey =
+                activeDay !== null && activeDay !== ALL_DAY_INDEX ? DAY_KEY_MAP[activeDay] : null;
 
               const isSat = mapStyle === "satellite";
 
@@ -691,6 +712,13 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
               const isSegEndpoint = anySegHover && (hoveredSegment!.fromId === m.location.id || hoveredSegment!.toId === m.location.id);
               const eventMatchesPoi = (() => {
                 if (!hoveredEventKey || activeDay === null) return false;
+                if (activeDay === ALL_DAY_INDEX) {
+                  const parts = hoveredEventKey.split("-");
+                  if (parts[0] !== "all") return false;
+                  const stopIdx = parseInt(parts[1] ?? "", 10);
+                  const route = getUniqueVisitedPoisInOrder();
+                  return route[stopIdx]?.id === m.location.id;
+                }
                 const [, eiStr] = hoveredEventKey.split("-");
                 const locId = days[activeDay]?.events[parseInt(eiStr, 10)]?.locationId;
                 return locId === m.location.id;
@@ -702,12 +730,23 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
 
               let displayNumbers = activeDay !== null ? m.visitNumbers : undefined;
               if (hoveredEventKey && activeDay !== null) {
-                const [, eiStr] = hoveredEventKey.split("-");
-                const ei = parseInt(eiStr, 10);
-                const hoveredLocId = days[activeDay]?.events[ei]?.locationId;
-                if (hoveredLocId === m.location.id) {
-                  const singleNum = getVisitNumberForEvent(activeDay, ei);
-                  if (singleNum != null) displayNumbers = [singleNum];
+                if (activeDay === ALL_DAY_INDEX) {
+                  const parts = hoveredEventKey.split("-");
+                  if (parts[0] === "all") {
+                    const stopIdx = parseInt(parts[1] ?? "", 10);
+                    const route = getUniqueVisitedPoisInOrder();
+                    if (route[stopIdx]?.id === m.location.id) {
+                      displayNumbers = [stopIdx + 1];
+                    }
+                  }
+                } else {
+                  const [, eiStr] = hoveredEventKey.split("-");
+                  const ei = parseInt(eiStr, 10);
+                  const hoveredLocId = days[activeDay]?.events[ei]?.locationId;
+                  if (hoveredLocId === m.location.id) {
+                    const singleNum = getVisitNumberForEvent(activeDay, ei);
+                    if (singleNum != null) displayNumbers = [singleNum];
+                  }
                 }
               }
 

@@ -1,16 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ElementType } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Footprints, TrainFront, Car, ExternalLink } from "lucide-react";
-import { days, getLocation } from "@/data/trip";
-import type { TripEvent } from "@/data/trip";
+import {
+  Footprints,
+  TrainFront,
+  Car,
+  ExternalLink,
+  Hotel,
+  UtensilsCrossed,
+  Landmark,
+  Wine,
+  Coffee,
+  ShoppingBag,
+  Music,
+  MapPin,
+  Star,
+} from "lucide-react";
+import { days, getLocation, getUniqueVisitedPoisInOrder, ALL_DAY_INDEX } from "@/data/trip";
+import type { TripEvent, Location } from "@/data/trip";
 import walkingRoutes from "@/data/walking-routes.json";
 import DayTabs from "./DayTabs";
 import TimelineEvent from "./TimelineEvent";
 
 const dayColors = ["text-day-1", "text-day-2", "text-day-3"];
 const dayKeys = ["friday", "saturday", "sunday"];
+
+const POI_CATEGORY_ICON: Record<Location["category"], ElementType> = {
+  hotel: Hotel,
+  restaurant: UtensilsCrossed,
+  landmark: Landmark,
+  bar: Wine,
+  cafe: Coffee,
+  entertainment: Music,
+  shopping: ShoppingBag,
+  transport: MapPin,
+};
+
+const POI_CATEGORY_LABEL: Record<Location["category"], string> = {
+  hotel: "Hotel",
+  restaurant: "Restaurant",
+  landmark: "Sehenswürdigkeit",
+  bar: "Bar",
+  cafe: "Café",
+  entertainment: "Unterhaltung",
+  shopping: "Shopping",
+  transport: "Transport",
+};
 
 const STAGE_PALETTES: string[][] = [
   ["#FFD700", "#FF8C00", "#22D3EE", "#FF6B6B", "#4ADE80"],
@@ -295,8 +331,6 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
     if (onDayChange) onDayChange(day);
     else setInternalDay(day);
   };
-  const day = days[activeDay];
-
   return (
     <section id="timeline" className={embedded ? "relative px-4 sm:px-5" : "relative py-20 px-4 sm:px-6"}>
       <div className={embedded ? "" : "max-w-3xl mx-auto"}>
@@ -329,6 +363,97 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
 
         {/* Day Content */}
         <AnimatePresence mode="wait">
+          {activeDay === ALL_DAY_INDEX ? (
+            <motion.div
+              key="all-days"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mt-5 mb-6">
+                <h3 className="text-lg sm:text-xl font-light text-gradient-gold tracking-wide">Alle Tage</h3>
+                <p className="text-xs sm:text-sm text-text-secondary/80 font-light mt-1 tracking-wide">
+                  Alle Orte einmal · kompakte Übersicht
+                </p>
+                <div className="mt-3 h-px w-16 bg-gradient-to-r from-gold/40 to-transparent" />
+              </div>
+              {(() => {
+                const pois = getUniqueVisitedPoisInOrder();
+                const anyHover =
+                  hoveredEventKey != null || hoveredSegment != null || hoveredLocationId != null;
+                return (
+                  <div className="mt-6 space-y-0">
+                    {pois.map((loc, i) => {
+                      const Icon = POI_CATEGORY_ICON[loc.category] ?? Star;
+                      const catLabel = POI_CATEGORY_LABEL[loc.category] ?? "Ort";
+                      const isLast = i === pois.length - 1;
+                      const isHovered =
+                        hoveredEventKey === `all-${i}` ||
+                        (hoveredEventKey == null && hoveredLocationId === loc.id);
+                      return (
+                        <div
+                          key={loc.id}
+                          className={`flex gap-4 sm:gap-5 transition-opacity duration-200 ${
+                            anyHover && !isHovered ? "opacity-40" : "opacity-100"
+                          }`}
+                        >
+                          <div className="flex flex-col items-center pt-1.5 shrink-0">
+                            <div
+                              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 text-[11px] sm:text-xs font-mono tabular-nums font-semibold transition-all duration-200 ${
+                                isHovered
+                                  ? "scale-110 text-[#FF2D78] bg-[#FF2D78]/15 ring-2 ring-[#FF2D78]/50 shadow-[0_0_16px_rgba(255,45,120,0.25)]"
+                                  : "text-gold/90 glass border border-white/[0.08]"
+                              }`}
+                            >
+                              {i + 1}
+                            </div>
+                            {!isLast && (
+                              <div className="w-px flex-1 min-h-[24px] bg-gradient-to-b from-glass-border to-transparent mt-2" />
+                            )}
+                          </div>
+                          <div className="flex-1 pb-6 sm:pb-7 min-w-0">
+                            <button
+                              type="button"
+                              onMouseEnter={() => onHoverEvent?.(loc.id, `all-${i}`)}
+                              onMouseLeave={() => onHoverEvent?.(null, null)}
+                              className={`w-full text-left rounded-xl border overflow-hidden transition-all duration-200 ${
+                                isHovered
+                                  ? "border-[#FF2D78]/30 shadow-[0_0_20px_rgba(255,45,120,0.12)] bg-[#FF2D78]/[0.05]"
+                                  : "border-white/[0.07] bg-white/[0.02] hover:border-white/[0.1] hover:bg-white/[0.04]"
+                              }`}
+                            >
+                              <div className="relative px-3.5 py-3 sm:px-4 sm:py-3.5">
+                                <div className="flex items-start gap-3">
+                                  <div
+                                    className={`mt-0.5 shrink-0 w-8 h-8 rounded-lg flex items-center justify-center border transition-colors duration-200 ${
+                                      isHovered
+                                        ? "border-[#FF2D78]/35 bg-[#FF2D78]/10 text-[#FF2D78]"
+                                        : "border-white/[0.08] bg-white/[0.04] text-gold/85"
+                                    }`}
+                                  >
+                                    <Icon className="w-4 h-4" />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm sm:text-[15px] font-light text-text-primary tracking-wide leading-snug">
+                                      {loc.name}
+                                    </p>
+                                    <p className="text-[10px] text-text-muted uppercase tracking-[0.14em] mt-1.5">
+                                      {catLabel}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </motion.div>
+          ) : (
           <motion.div
             key={activeDay}
             initial={{ opacity: 0, x: 20 }}
@@ -336,6 +461,10 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
+            {(() => {
+              const day = days[activeDay];
+              return (
+            <>
             <div className="mt-5 mb-6">
               {(() => {
                 const parts = day.subtitle.split(" — ");
@@ -472,7 +601,11 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
                 });
               })()}
             </div>
+            </>
+              );
+            })()}
           </motion.div>
+          )}
         </AnimatePresence>
       </div>
     </section>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import ParisFactFloat from "./ParisFactFloat";
+import ParisHeroFact from "./ParisHeroFact";
 
 const TARGET = new Date("2026-05-01T06:00:00+02:00").getTime();
 
@@ -42,7 +42,7 @@ export default function Hero() {
 
       <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_50%_30%,rgba(201,169,110,0.3)_0%,transparent_70%)]" />
 
-      {/* Subtle star-like particles — unter den schwebenden Zitaten */}
+      {/* Subtle star-like particles */}
       <div className="absolute inset-0 z-[6] overflow-hidden pointer-events-none">
         {[...Array(30)].map((_, i) => (
           <div
@@ -57,8 +57,6 @@ export default function Hero() {
           />
         ))}
       </div>
-
-      <ParisFactFloat />
 
       {/* Content — true center via absolute + transform */}
       <div
@@ -122,6 +120,11 @@ export default function Hero() {
             </div>
           )}
         </motion.div>
+      </div>
+
+      {/* Paris-Fakt — ganz unten im Hero, über dem Scroll-Hinweis */}
+      <div className="absolute z-20 bottom-[4.25rem] sm:bottom-20 left-1/2 w-full max-w-lg -translate-x-1/2 px-6 text-center pointer-events-none">
+        <ParisHeroFact />
       </div>
 
       {/* Scroll indicator */}

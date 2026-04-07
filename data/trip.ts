@@ -741,3 +741,38 @@ export const totalBudget = totalPaid + totalOnSite;
 export function getLocation(id: string): Location | undefined {
   return locations.find((l) => l.id === id);
 }
+
+/** Tab-Index für kombinierte Ansicht: alle besuchten POIs auf einer Karte */
+export const ALL_DAY_INDEX = 3 as const;
+
+/**
+ * Chronologische Kette aller besuchten POIs über alle Trip-Tage (ohne `hidden`).
+ * Aufeinanderfolgende Events am gleichen Ort werden wie pro Tag zusammengefasst.
+ */
+export function getChronologicalRouteAllDays(): Location[] {
+  const route: Location[] = [];
+  let prevId: string | null = null;
+  for (let d = 0; d < days.length; d++) {
+    for (const event of days[d].events) {
+      if (!event.locationId) continue;
+      const loc = getLocation(event.locationId);
+      if (!loc || loc.hidden) continue;
+      if (event.locationId === prevId) continue;
+      route.push(loc);
+      prevId = event.locationId;
+    }
+  }
+  return route;
+}
+
+/** Jeder besuchte POI nur einmal, Reihenfolge = erster Auftritt im Trip (für ALL-Ansicht). */
+export function getUniqueVisitedPoisInOrder(): Location[] {
+  const seen = new Set<string>();
+  const out: Location[] = [];
+  for (const loc of getChronologicalRouteAllDays()) {
+    if (seen.has(loc.id)) continue;
+    seen.add(loc.id);
+    out.push(loc);
+  }
+  return out;
+}
