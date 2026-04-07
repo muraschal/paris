@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, ExternalLink, X, Camera } from "lucide-react";
-import { MapContainer, TileLayer, Marker, Polyline, CircleMarker, Tooltip, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Polyline, CircleMarker, Tooltip, useMap, ZoomControl } from "react-leaflet";
 import L from "leaflet";
 import { locations, days, getLocation } from "@/data/trip";
 import type { Location } from "@/data/trip";
@@ -260,18 +260,30 @@ function createTransportLabel(segment: RouteSegment, arcMid: [number, number], s
   };
 }
 
-function FitBounds({ locs }: { locs: Location[] }) {
+/** Tighter fit = more zoom while keeping all markers in view; Vendredi (0) tolerates closest zoom. */
+function getFitOptions(dayIndex: number | null): { padding: [number, number]; maxZoom: number; singleZoom: number } {
+  if (dayIndex === 0) {
+    return { padding: [10, 10], maxZoom: 17, singleZoom: 15 };
+  }
+  if (dayIndex === 1 || dayIndex === 2) {
+    return { padding: [18, 18], maxZoom: 16, singleZoom: 14 };
+  }
+  return { padding: [24, 24], maxZoom: 15, singleZoom: 13 };
+}
+
+function FitBounds({ locs, dayIndex }: { locs: Location[]; dayIndex: number | null }) {
   const map = useMap();
   useEffect(() => {
+    const { padding, maxZoom, singleZoom } = getFitOptions(dayIndex);
     if (locs.length > 1) {
       const bounds = L.latLngBounds(
         locs.map((l) => [l.coordinates.lat, l.coordinates.lng] as [number, number])
       );
-      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 });
+      map.fitBounds(bounds, { padding, maxZoom });
     } else if (locs.length === 1) {
-      map.setView([locs[0].coordinates.lat, locs[0].coordinates.lng], 14);
+      map.setView([locs[0].coordinates.lat, locs[0].coordinates.lng], singleZoom);
     }
-  }, [locs, map]);
+  }, [locs, map, dayIndex]);
   return null;
 }
 
@@ -397,7 +409,11 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
             className={`w-full h-full ${compact ? "" : "rounded-2xl"} ${mapStyle === "light" ? "map-light" : ""} ${mapStyle === "satellite" ? "map-satellite" : ""}`}
             zoomControl={false}
             attributionControl={false}
+            scrollWheelZoom={false}
+            doubleClickZoom
+            touchZoom
           >
+            <ZoomControl position="bottomright" />
             <TileLayer key={mapStyle} url={MAP_STYLES[mapStyle].url} />
 
             {/* Route segments between stops */}
@@ -717,7 +733,7 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
               );
             })}
 
-            <FitBounds locs={uniqueLocations} />
+            <FitBounds locs={uniqueLocations} dayIndex={activeDay} />
           </MapContainer>
 
           {/* Map Style Switcher */}

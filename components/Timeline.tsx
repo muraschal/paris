@@ -21,6 +21,10 @@ const STAGE_PALETTES: string[][] = [
 /** Sonntag: Fußweg Pont des Arts → Louvre (eigene Akzentfarbe) */
 const PONT_TO_LOUVRE_WALK_COLOR = "#f97316";
 
+/** Route-Pills: symmetrisches Padding + feste Mindesthöhe → echte vertikale Mitte */
+const routeBadgePillClass =
+  "inline-flex flex-wrap items-center gap-x-2 gap-y-1 min-h-7 px-3 py-1.5 rounded-full border box-border transition-all duration-200 leading-none";
+
 const TRANSPORT_STYLES = {
   walk: {
     Icon: Footprints,
@@ -92,7 +96,7 @@ interface HoveredSegment {
   toId: string;
 }
 
-function TransportConnector({ from, to, event, dayKey, segmentColor, hoveredSegment, hoveredEventKey, onHoverSegment, overrideToName, overrideFromId, overrideToId }: {
+function TransportConnector({ from, to, event, dayKey, segmentColor, hoveredSegment, hoveredEventKey, hoveredLocationId, onHoverSegment, overrideToName, overrideFromId, overrideToId }: {
   from: TripEvent;
   to: TripEvent;
   event: TripEvent;
@@ -100,6 +104,7 @@ function TransportConnector({ from, to, event, dayKey, segmentColor, hoveredSegm
   segmentColor: string;
   hoveredSegment?: HoveredSegment | null;
   hoveredEventKey?: string | null;
+  hoveredLocationId?: string | null;
   onHoverSegment?: (seg: HoveredSegment | null) => void;
   overrideToName?: string;
   overrideFromId?: string;
@@ -126,7 +131,8 @@ function TransportConnector({ from, to, event, dayKey, segmentColor, hoveredSegm
   const isHighlighted = hoveredSegment != null
     && hoveredSegment.fromId === segFrom
     && hoveredSegment.toId === segTo;
-  const isDimmed = (hoveredSegment != null || hoveredEventKey != null) && !isHighlighted;
+  const isDimmed =
+    (hoveredSegment != null || hoveredEventKey != null || hoveredLocationId != null) && !isHighlighted;
 
   const c = segmentColor;
 
@@ -147,37 +153,39 @@ function TransportConnector({ from, to, event, dayKey, segmentColor, hoveredSegm
         </div>
         <div className="w-px flex-1 min-h-[8px] bg-gradient-to-b from-glass-border to-transparent" />
       </div>
-      <div className="flex-1 pb-3 flex items-center gap-3 min-w-0">
+      <div className="flex-1 flex items-center gap-3 min-w-0">
         <div
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200"
+          className={routeBadgePillClass}
           style={{
             borderColor: isHighlighted ? `${c}80` : `${c}40`,
             background: isHighlighted ? `${c}1a` : `${c}0d`,
             ...(isHighlighted ? { boxShadow: `0 0 20px ${c}30` } : {}),
           }}
         >
-          <span className="text-[10px] tracking-wide transition-colors duration-200" style={{ color: `${c}cc` }}>
+          <span className="text-[10px] leading-none tracking-wide transition-colors duration-200" style={{ color: `${c}cc` }}>
             {fromLoc.name}
           </span>
-          <span className="text-[8px]" style={{ color: `${c}60` }}>→</span>
-          <span className="text-[10px] tracking-wide transition-colors duration-200" style={{ color: `${c}cc` }}>
+          <span className="text-[8px] leading-none" style={{ color: `${c}60` }} aria-hidden>
+            →
+          </span>
+          <span className="text-[10px] leading-none tracking-wide transition-colors duration-200" style={{ color: `${c}cc` }}>
             {overrideToName || toLoc.name}
           </span>
           {label && (
             <span
-              className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
+              className="inline-flex items-center justify-center min-h-5 px-1.5 py-0.5 text-[9px] leading-none rounded-full font-semibold"
               style={{ background: `${c}30`, color: c }}
             >
               {label}
             </span>
           )}
           {dur && (
-            <span className={`text-[10px] font-mono tabular-nums ${isHighlighted ? "" : ""}`} style={{ color: `${c}b0` }}>
+            <span className="text-[10px] leading-none font-mono tabular-nums" style={{ color: `${c}b0` }}>
               {dur}
             </span>
           )}
           {distKm && (
-            <span className="text-[9px] font-mono tabular-nums" style={{ color: `${c}80` }}>
+            <span className="text-[9px] leading-none font-mono tabular-nums" style={{ color: `${c}80` }}>
               {distKm} km
             </span>
           )}
@@ -187,12 +195,12 @@ function TransportConnector({ from, to, event, dayKey, segmentColor, hoveredSegm
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 px-1.5 py-0.5 rounded-full transition-all duration-200 hover:scale-105"
+              className="inline-flex items-center justify-center gap-1 min-h-5 px-1.5 py-0.5 rounded-full transition-all duration-200 hover:scale-105 leading-none"
               style={{ background: `${c}25`, color: c }}
               title="Uber öffnen"
             >
-              <ExternalLink className="w-2.5 h-2.5" />
-              <span className="text-[8px] font-semibold tracking-wide">UBER</span>
+              <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+              <span className="text-[8px] font-semibold tracking-wide leading-none">UBER</span>
             </a>
           )}
         </div>
@@ -201,7 +209,7 @@ function TransportConnector({ from, to, event, dayKey, segmentColor, hoveredSegm
   );
 }
 
-function ExitWalkConnector({ fromName, toName, durationMin, distanceKm, color, hoveredSegment, hoveredEventKey, segFromId, segToId, onHoverSegment }: {
+function ExitWalkConnector({ fromName, toName, durationMin, distanceKm, color, hoveredSegment, hoveredEventKey, hoveredLocationId, segFromId, segToId, onHoverSegment }: {
   fromName: string;
   toName: string;
   durationMin: number;
@@ -209,6 +217,7 @@ function ExitWalkConnector({ fromName, toName, durationMin, distanceKm, color, h
   color: string;
   hoveredSegment?: HoveredSegment | null;
   hoveredEventKey?: string | null;
+  hoveredLocationId?: string | null;
   segFromId: string;
   segToId: string;
   onHoverSegment?: (seg: HoveredSegment | null) => void;
@@ -216,7 +225,8 @@ function ExitWalkConnector({ fromName, toName, durationMin, distanceKm, color, h
   const isHighlighted = hoveredSegment != null
     && hoveredSegment.fromId === segFromId
     && hoveredSegment.toId === segToId;
-  const isDimmed = (hoveredSegment != null || hoveredEventKey != null) && !isHighlighted;
+  const isDimmed =
+    (hoveredSegment != null || hoveredEventKey != null || hoveredLocationId != null) && !isHighlighted;
   const c = color;
 
   return (
@@ -236,26 +246,28 @@ function ExitWalkConnector({ fromName, toName, durationMin, distanceKm, color, h
         </div>
         <div className="w-px flex-1 min-h-[8px] bg-gradient-to-b from-glass-border to-transparent" />
       </div>
-      <div className="flex-1 pb-3 flex items-center gap-3 min-w-0">
+      <div className="flex-1 flex items-center gap-3 min-w-0">
         <div
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200"
+          className={routeBadgePillClass}
           style={{
             borderColor: isHighlighted ? `${c}80` : `${c}40`,
             background: isHighlighted ? `${c}1a` : `${c}0d`,
             ...(isHighlighted ? { boxShadow: `0 0 20px ${c}30` } : {}),
           }}
         >
-          <span className="text-[10px] tracking-wide transition-colors duration-200" style={{ color: `${c}cc` }}>
+          <span className="text-[10px] leading-none tracking-wide transition-colors duration-200" style={{ color: `${c}cc` }}>
             {fromName}
           </span>
-          <span className="text-[8px]" style={{ color: `${c}60` }}>→</span>
-          <span className="text-[10px] tracking-wide transition-colors duration-200" style={{ color: `${c}cc` }}>
+          <span className="text-[8px] leading-none" style={{ color: `${c}60` }} aria-hidden>
+            →
+          </span>
+          <span className="text-[10px] leading-none tracking-wide transition-colors duration-200" style={{ color: `${c}cc` }}>
             {toName}
           </span>
-          <span className="text-[10px] font-mono tabular-nums" style={{ color: `${c}b0` }}>
+          <span className="text-[10px] leading-none font-mono tabular-nums" style={{ color: `${c}b0` }}>
             {durationMin} Min
           </span>
-          <span className="text-[9px] font-mono tabular-nums" style={{ color: `${c}80` }}>
+          <span className="text-[9px] leading-none font-mono tabular-nums" style={{ color: `${c}80` }}>
             {distanceKm} km
           </span>
         </div>
@@ -390,7 +402,7 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
                     const walkSegToId = event.locationId ?? "";
 
                     return (
-                      <div key={`${activeDay}-${i}`}>
+                      <div key={`${activeDay}-${i}`} className="flex flex-col gap-3">
                         <TransportConnector
                           from={prev}
                           to={event}
@@ -399,6 +411,7 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
                           segmentColor={segColor}
                           hoveredSegment={hoveredSegment}
                           hoveredEventKey={hoveredEventKey}
+                          hoveredLocationId={hoveredLocationId}
                           onHoverSegment={onHoverSegment}
                           overrideToName={exitWalkFrom?.name}
                           overrideFromId={metroSegFromId}
@@ -413,6 +426,7 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
                             color={walkColor}
                             hoveredSegment={hoveredSegment}
                             hoveredEventKey={hoveredEventKey}
+                            hoveredLocationId={hoveredLocationId}
                             segFromId={walkSegFromId}
                             segToId={walkSegToId}
                             onHoverSegment={onHoverSegment}
@@ -426,7 +440,7 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
                   const showTimeSpacer = prev && !isWalkWithPrev && (event.transport === "none" || sameLocation);
 
                   return (
-                    <div key={`${activeDay}-${i}`}>
+                    <div key={`${activeDay}-${i}`} className="flex flex-col gap-3">
                       {isWalkWithPrev && prev && (
                         <TransportConnector
                           from={prev}
@@ -436,6 +450,7 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
                           segmentColor={segColor}
                           hoveredSegment={hoveredSegment}
                           hoveredEventKey={hoveredEventKey}
+                          hoveredLocationId={hoveredLocationId}
                           onHoverSegment={onHoverSegment}
                         />
                       )}
@@ -448,6 +463,7 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
                         isLast={i >= lastNonTransportIdx}
                         dayColor={dayColors[activeDay]}
                         hoveredEventKey={hoveredEventKey}
+                        hoveredLocationId={hoveredLocationId}
                         hoveredSegment={hoveredSegment}
                         onHoverEvent={onHoverEvent}
                       />

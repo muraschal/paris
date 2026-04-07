@@ -128,11 +128,12 @@ interface TimelineEventProps {
   dayColor: string;
 
   hoveredEventKey?: string | null;
+  hoveredLocationId?: string | null;
   hoveredSegment?: HoveredSegment | null;
   onHoverEvent?: (locationId: string | null, eventKey: string | null) => void;
 }
 
-export default function TimelineEventCard({ event, eventKey, isLast, dayColor, hoveredEventKey, hoveredSegment, onHoverEvent }: TimelineEventProps) {
+export default function TimelineEventCard({ event, eventKey, isLast, dayColor, hoveredEventKey, hoveredLocationId, hoveredSegment, onHoverEvent }: TimelineEventProps) {
   const [showTicket, setShowTicket] = useState(false);
   const Icon = iconMap[event.icon] || Star;
   const location = event.locationId ? getLocation(event.locationId) : null;
@@ -141,8 +142,14 @@ export default function TimelineEventCard({ event, eventKey, isLast, dayColor, h
   const isBooked = !!event.ticketRef || event.costPaid === true;
   const isFixedTime = !event.time.startsWith("~") && event.time !== "Late";
 
-  const anyHoverActive = hoveredEventKey != null || hoveredSegment != null;
-  const isHovered = hoveredEventKey === eventKey;
+  const anyHoverActive =
+    hoveredEventKey != null || hoveredSegment != null || hoveredLocationId != null;
+  /** Karten-Hover setzt nur locationId; Timeline-Hover setzt eventKey — dann nur exaktes Event, nicht alle am gleichen Ort. */
+  const isHovered =
+    hoveredEventKey === eventKey ||
+    (hoveredEventKey == null &&
+      !!event.locationId &&
+      hoveredLocationId === event.locationId);
 
   const duration = (() => {
     if (!event.endTime) return null;
@@ -199,7 +206,7 @@ export default function TimelineEventCard({ event, eventKey, isLast, dayColor, h
       {/* Content */}
       <div className="flex-1 pb-7 sm:pb-8 min-w-0 relative">
         {/* Unified card background */}
-        <div className={`absolute -top-2 -left-2.5 -right-2.5 bottom-2 rounded-xl overflow-hidden pointer-events-none border transition-all duration-200 ${
+        <div className={`absolute -top-1.5 -left-2.5 -right-2.5 bottom-2 rounded-xl overflow-hidden pointer-events-none border transition-all duration-200 ${
           isHovered
             ? "border-[#FF2D78]/25 shadow-[0_0_24px_rgba(255,45,120,0.15)]"
             : isBooked ? "border-gold/[0.12]" : "border-white/[0.06]"
@@ -230,27 +237,27 @@ export default function TimelineEventCard({ event, eventKey, isLast, dayColor, h
                 {event.endTime && `–${event.endTime}`}
               </span>
               {isBooked && (
-                <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold uppercase tracking-[0.15em] font-semibold border border-gold/20">
+                <span className="inline-flex items-center justify-center min-h-5 px-1.5 py-0 text-[8px] leading-none rounded-full bg-gold/15 text-gold uppercase tracking-[0.15em] font-semibold border border-gold/20">
                   Gebucht
                 </span>
               )}
               {duration && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-glass text-text-secondary tabular-nums">
+                <span className="inline-flex items-center justify-center min-h-5 px-1.5 py-0 text-[9px] leading-none rounded-full bg-glass text-text-secondary tabular-nums">
                   ⏱ {duration}
                 </span>
               )}
               {event.transport === "uber" && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-glass text-text-muted uppercase tracking-wider">
+                <span className="inline-flex items-center justify-center min-h-5 px-1.5 py-0 text-[9px] leading-none rounded-full bg-glass text-text-muted uppercase tracking-wider">
                   🚕 Uber
                 </span>
               )}
               {event.transport === "metro" && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#0078D4]/15 text-[#0078D4] border border-[#0078D4]/20 uppercase tracking-wider">
+                <span className="inline-flex items-center justify-center min-h-5 px-1.5 py-0 text-[9px] leading-none rounded-full bg-[#0078D4]/15 text-[#0078D4] border border-[#0078D4]/20 uppercase tracking-wider">
                   🚇 Métro {event.transportDuration && `· ${event.transportDuration}`}
                 </span>
               )}
               {event.transport === "walk" && event.transportDuration && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-glass text-text-muted uppercase tracking-wider">
+                <span className="inline-flex items-center justify-center min-h-5 px-1.5 py-0 text-[9px] leading-none rounded-full bg-glass text-text-muted uppercase tracking-wider">
                   🚶 {event.transportDuration}
                 </span>
               )}

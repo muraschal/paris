@@ -62,7 +62,7 @@ function TicketCard({ id, ticket }: { id: string; ticket: (typeof tickets)[strin
             <h4 className="text-sm font-medium text-text-primary truncate">{ticket.title}</h4>
             <div className="flex items-center gap-2 mt-1">
               <span
-                className="text-[8px] px-1.5 py-0.5 rounded-full uppercase tracking-[0.12em] font-semibold"
+                className="inline-flex items-center text-[8px] leading-none px-1.5 py-1 rounded-full uppercase tracking-[0.12em] font-semibold"
                 style={{ backgroundColor: `${dayColor}20`, color: dayColor, border: `1px solid ${dayColor}30` }}
               >
                 {ticket.day}

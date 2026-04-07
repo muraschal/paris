@@ -2,10 +2,22 @@
  * Fetches walking routes from Google Directions API for all walk segments
  * and saves them as static JSON for the RouteMap component.
  *
- * Usage: npx tsx scripts/fetch-routes.ts
+ * Set GOOGLE_MAPS_API_KEY in `.env` or `.env.local` (see `.env.example`), then:
+ *   npm run fetch-routes
  */
 
-const API_KEY = "AIzaSyAxFefB-OTkDUBts9eW6n8uAj3Co3sYzbQ";
+import { config } from "dotenv";
+
+config({ path: ".env" });
+config({ path: ".env.local", override: true });
+
+const API_KEY = process.env.GOOGLE_MAPS_API_KEY?.trim();
+if (!API_KEY) {
+  console.error(
+    "Missing GOOGLE_MAPS_API_KEY. Copy .env.example to .env.local and add your key."
+  );
+  process.exit(1);
+}
 
 interface Coord {
   lat: number;
