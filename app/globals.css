@@ -286,6 +286,32 @@ body {
   display: none !important;
 }
 
+/* ALL-Karte: Tages-Beschriftungen in den Bounding-Boxen */
+.day-bounds-label-marker {
+  background: transparent !important;
+  border: none !important;
+}
+.day-bounds-label-pill {
+  --day-accent: #c9a96e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--day-accent) 88%, #ffffff 12%);
+  background: color-mix(in srgb, var(--day-accent) 26%, rgba(8, 8, 22, 0.94) 74%);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid color-mix(in srgb, var(--day-accent) 72%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--day-accent) 35%, transparent),
+    0 6px 20px rgba(0, 0, 0, 0.42);
+  white-space: nowrap;
+}
+
 .custom-marker {
   background: none;
   border: none;
