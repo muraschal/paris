@@ -129,7 +129,7 @@ export default function HotelCard() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start">
           {/* Slideshow — takes 3/5 on desktop */}
           <motion.div
-            className="relative rounded-2xl overflow-hidden lg:col-span-3"
+            className="relative rounded-2xl overflow-hidden lg:col-span-3 touch-pan-y"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
@@ -137,17 +137,18 @@ export default function HotelCard() {
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
           >
-            <div className="relative aspect-[4/3] sm:aspect-[16/10] overflow-hidden">
+            {/* touch-pan-y: vertikales Seiten-Scrollen auf Mobilgeräten nicht mit Bild-Transform verklemmen */}
+            <div className="relative aspect-[4/3] sm:aspect-[16/10] overflow-hidden touch-pan-y isolate">
               <AnimatePresence mode="wait">
                 <motion.img
                   key={current}
                   src={HOTEL_IMAGES[current].url}
                   alt={HOTEL_IMAGES[current].caption}
                   className="absolute inset-0 w-full h-full object-cover"
-                  initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8 }}
+                  transition={{ duration: 0.45 }}
                 />
               </AnimatePresence>
 
