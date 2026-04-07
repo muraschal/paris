@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Hotel, Map, Camera, Ticket, Wallet } from "lucide-react";
-import DayTabs from "./DayTabs";
-import { useAgendaDay } from "./AgendaDayContext";
 
 const sections = [
   { id: "hotel", label: "Hotel", icon: Hotel },
@@ -17,7 +15,6 @@ const sections = [
 export default function Navigation() {
   const [visible, setVisible] = useState(false);
   const [active, setActive] = useState("");
-  const { activeDay, setActiveDay } = useAgendaDay();
 
   useEffect(() => {
     const onScroll = () => {
@@ -53,28 +50,8 @@ export default function Navigation() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 max-w-[calc(100vw-1.5rem)]"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-1.5rem)]"
         >
-          <AnimatePresence>
-            {active === "agenda" && (
-              <motion.div
-                key="dock-days"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                transition={{ duration: 0.2 }}
-                className="w-full flex justify-center px-1 lg:hidden"
-              >
-                <DayTabs
-                  activeDay={activeDay}
-                  onChange={setActiveDay}
-                  groupId="dock"
-                  compact
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           <div className="glass-strong glow-gold rounded-full px-2 py-2 flex items-center gap-1">
             {sections.map(({ id, label, icon: Icon }) => (
               <button
