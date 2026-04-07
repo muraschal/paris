@@ -54,7 +54,7 @@ export default function PhotoSpots() {
               <span className="text-gradient-gold">Les Moments</span>
             </h2>
             <p className="text-text-secondary text-sm sm:text-base font-light mt-3 tracking-wide">
-              {photoSpots.length} Locations für perfekte Erinnerungen
+              {photoSpots.length} Locations mit hohem Motiv-Potenzial
             </p>
           </motion.div>
 

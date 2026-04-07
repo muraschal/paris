@@ -33,7 +33,7 @@ export default function Footer() {
             <span className="text-gradient-gold">Bon voyage</span>
           </h3>
           <p className="text-text-secondary text-sm">
-            M&M's · Paris 2026
+            Paris · Mai 2026
           </p>
 
           {/* Quick Links Grid */}

@@ -367,7 +367,7 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
               <span className="text-gradient-gold">L&apos;Itinéraire</span>
             </h2>
             <p className="text-text-secondary text-sm sm:text-base font-light mt-3 tracking-wide">
-              Unsere Stops durch Paris
+              Stationen auf der Route
             </p>
           </motion.div>
 

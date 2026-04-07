@@ -27,6 +27,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* Verhindert horizontales „Mitscrollen“ durch 100vw / Leaflet / fixed UI (iOS/Android) */
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 @media (min-width: 1024px) {
@@ -44,7 +47,8 @@ body {
   background: var(--color-navy);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
-  overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -129,6 +133,19 @@ body {
   display: none;
 }
 
+/* Apple Wallet–style pass: perforated tear line */
+.pass-perforation {
+  height: 12px;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.18);
+  background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 1.5px, transparent 1.5px);
+  background-size: 10px 10px;
+  background-position: center top;
+  background-repeat: repeat-x;
+  opacity: 0.85;
+}
+
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -173,6 +190,8 @@ body {
 .leaflet-container {
   background: #12122a !important;
   border-radius: 16px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .map-satellite.leaflet-container {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, CheckCircle2, Clock } from "lucide-react";
 import { budgetPaid, budgetOnSite, totalPaid, totalOnSite, totalBudget, days } from "@/data/trip";
+import ParisTravelInsights from "./ParisTravelInsights";
 
 const eventCount = days.reduce((s, d) => s + d.events.filter(e => e.transport === "none").length, 0);
 
@@ -39,15 +40,17 @@ export default function BudgetSection() {
           className="text-center mb-10"
         >
           <p className="text-text-secondary text-xs tracking-[0.25em] uppercase mb-3">
-            Unser Weekend auf einen Blick
+            Auf einen Blick
           </p>
           <h2 className="text-3xl sm:text-5xl font-light tracking-tight">
             <span className="text-gradient-gold">Le Compte</span>
           </h2>
           <p className="text-text-secondary text-sm sm:text-base font-light mt-3 tracking-wide">
-            3 Tage · {eventCount} Erlebnisse · 1 Erinnerung
+            3 Tage · {eventCount} Aktivitäten · 1 Highlight
           </p>
         </motion.div>
+
+        <ParisTravelInsights />
 
         {/* Progress bar */}
         <motion.div
@@ -185,12 +188,12 @@ export default function BudgetSection() {
           className="mt-8 text-center"
         >
           <div className="glass rounded-2xl p-6 inline-flex flex-col items-center border border-gold/[0.06]">
-            <p className="text-[10px] text-text-muted uppercase tracking-[0.2em] mb-2">Total Weekend</p>
+            <p className="text-[10px] text-text-muted uppercase tracking-[0.2em] mb-2">Gesamtbudget</p>
             <p className="text-3xl sm:text-4xl font-light text-gradient-gold tabular-nums">
               ~{totalBudget}€
             </p>
             <p className="text-[11px] text-text-muted mt-3 italic tracking-wide">
-              No penny splitting. This is Paris. 🥂
+              Orientierungswerte — Paris-Preisniveau inklusive.
             </p>
           </div>
         </motion.div>

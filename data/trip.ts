@@ -422,7 +422,7 @@ export const days: TripDay[] = [
         time: "~18:15",
         endTime: "21:00",
         title: "Quality Time im Zimmer",
-        description: "Champagner aus der Minibar, Pariser Dächer im Abendlicht, Zeit nur für uns.",
+        description: "Champagner aus der Minibar, Pariser Dächer im Abendlicht, ruhiger Ausklang.",
         locationId: "maison-souquet",
         transport: "none",
         cost: null,

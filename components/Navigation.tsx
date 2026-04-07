@@ -50,9 +50,9 @@ export default function Navigation() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-1.5rem)]"
+          className="fixed bottom-6 inset-x-4 z-50 flex justify-center pointer-events-none sm:inset-x-6"
         >
-          <div className="glass-strong glow-gold rounded-full px-2 py-2 flex items-center gap-1">
+          <div className="glass-strong glow-gold rounded-full px-2 py-2 flex items-center gap-1 max-w-full pointer-events-auto">
             {sections.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}

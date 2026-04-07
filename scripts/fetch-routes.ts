@@ -11,13 +11,14 @@ import { config } from "dotenv";
 config({ path: ".env" });
 config({ path: ".env.local", override: true });
 
-const API_KEY = process.env.GOOGLE_MAPS_API_KEY?.trim();
-if (!API_KEY) {
+const API_KEY_RAW = process.env.GOOGLE_MAPS_API_KEY?.trim();
+if (!API_KEY_RAW) {
   console.error(
     "Missing GOOGLE_MAPS_API_KEY. Copy .env.example to .env.local and add your key."
   );
   process.exit(1);
 }
+const API_KEY: string = API_KEY_RAW;
 
 interface Coord {
   lat: number;

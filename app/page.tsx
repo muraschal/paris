@@ -8,11 +8,11 @@ import Footer from "@/components/Footer";
 import Navigation from "@/components/Navigation";
 import { AgendaDayProvider } from "@/components/AgendaDayContext";
 
-/* Layout rhythm: Hero (100dvh) + Hotel/Budget (min-h-dvh scenes) + long Agenda block + content-height Fotos/Tickets + compact Footer (no fullheight). Desktop scroll-snap: globals.css + #hotel/#budget/#agenda. */
+/* Layout rhythm: Hero (100dvh) + Hotel/Budget/Tickets (min-h-dvh on lg) + long Agenda + Fotos + Footer. Desktop scroll-snap: globals.css + snap sections. */
 export default function Home() {
   return (
     <AgendaDayProvider>
-      <main className="relative">
+      <main className="relative min-w-0 max-w-full overflow-x-clip">
         <Navigation />
         <Hero />
 

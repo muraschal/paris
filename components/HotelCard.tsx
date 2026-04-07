@@ -62,7 +62,7 @@ const HIGHLIGHTS = [
   {
     icon: Waves,
     title: "Salon d'Eau — privat",
-    text: "Hammam & Pool exklusiv für uns gebucht. Osmanisches Baderitual, Dampf, warmes Licht. 1h pure Ruhe.",
+    text: "Hammam & Pool privat nutzbar (je nach Buchung). Osmanisches Baderitual, Dampf, warmes Licht. Etwa 1 Stunde Ruhe.",
   },
   {
     icon: KeyRound,
@@ -115,7 +115,7 @@ export default function HotelCard() {
           className="text-center mb-10"
         >
           <p className="text-text-secondary text-xs tracking-[0.25em] uppercase mb-3">
-            Unser Zuhause in Montmartre
+            Unterkunft · Montmartre
           </p>
           <h2 className="text-3xl sm:text-5xl font-light tracking-tight mb-3">
             <span className="text-gradient-gold">La Maison</span>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import ParisFactFloat from "./ParisFactFloat";
 
 const TARGET = new Date("2026-05-01T06:00:00+02:00").getTime();
 
@@ -28,7 +29,7 @@ export default function Hero() {
   const isPast = diff !== null && diff <= 0;
 
   return (
-    <section className="relative h-dvh w-full overflow-hidden">
+    <section className="relative h-[100svh] min-h-[100svh] w-full max-w-full overflow-hidden lg:h-dvh lg:min-h-0">
       {/* Background gradient simulating Paris night sky */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d2b] via-[#0a0a1a] to-navy" />
 
@@ -41,8 +42,8 @@ export default function Hero() {
 
       <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_50%_30%,rgba(201,169,110,0.3)_0%,transparent_70%)]" />
 
-      {/* Subtle star-like particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Subtle star-like particles — unter den schwebenden Zitaten */}
+      <div className="absolute inset-0 z-[6] overflow-hidden pointer-events-none">
         {[...Array(30)].map((_, i) => (
           <div
             key={i}
@@ -57,9 +58,11 @@ export default function Hero() {
         ))}
       </div>
 
+      <ParisFactFloat />
+
       {/* Content — true center via absolute + transform */}
       <div
-        className="absolute z-10 left-1/2 top-1/2 w-full max-w-lg px-6 text-center"
+        className="absolute z-20 left-1/2 top-1/2 w-full max-w-lg px-6 text-center"
         style={{ transform: "translate(-50%, -50%)" }}
       >
         <motion.div
@@ -76,7 +79,7 @@ export default function Hero() {
           </h1>
 
           <p className="text-xl sm:text-2xl font-extralight text-text-primary/70 tracking-wide">
-            M&M's
+            Drei Tage · Paris
           </p>
 
           <div className="flex items-center justify-center gap-3 mt-7 mb-8">
@@ -123,7 +126,7 @@ export default function Hero() {
 
       {/* Scroll indicator */}
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30"
         animate={{ y: [0, 8, 0] }}
         transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
       >

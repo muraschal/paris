@@ -9,14 +9,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Rendez-vous à Paris — M&M's",
+  title: "Rendez-vous à Paris",
   description: "Paris · 1.–3. Mai 2026",
   icons: {
     icon: "/icon.svg",
     apple: "/icon.svg",
   },
   openGraph: {
-    title: "Rendez-vous à Paris — M&M's",
+    title: "Rendez-vous à Paris",
     description: "Paris · 1.–3. Mai 2026",
     siteName: "Rendez-vous à Paris",
     locale: "de_DE",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rendez-vous à Paris — M&M's",
+    title: "Rendez-vous à Paris",
     description: "Paris · 1.–3. Mai 2026",
   },
   other: {
@@ -49,7 +49,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de" className={`${inter.variable} antialiased`} suppressHydrationWarning>
-      <body className="min-h-dvh bg-navy" suppressHydrationWarning>{children}</body>
+      <body className="min-h-[100svh] bg-navy" suppressHydrationWarning>{children}</body>
     </html>
   );
 }

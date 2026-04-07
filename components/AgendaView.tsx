@@ -131,7 +131,7 @@ export default function AgendaView() {
       </div>
 
       {/* Map — fixed-height panel */}
-      <div className="relative w-full" style={{ height: "45dvh" }}>
+      <div className="relative w-full max-w-full min-h-0 overflow-hidden h-[45svh]">
         <RouteMap
           activeDay={activeDay}
           onDayChange={setActiveDay}
