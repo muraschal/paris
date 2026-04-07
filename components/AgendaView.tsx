@@ -73,7 +73,7 @@ export default function AgendaView() {
 
   if (isDesktop) {
     return (
-      <section id="agenda" className="relative scroll-mt-0 snap-start snap-always">
+      <section id="agenda" className="relative scroll-mt-0 snap-start">
         <div
           ref={tabsRef}
           className="sticky top-0 z-30 bg-navy/90 backdrop-blur-xl border-b border-white/[0.06]"

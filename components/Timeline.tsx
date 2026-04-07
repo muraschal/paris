@@ -18,6 +18,9 @@ const STAGE_PALETTES: string[][] = [
   ["#FB7185", "#2DD4BF", "#FCD34D", "#A78BFA", "#38BDF8"],
 ];
 
+/** Sonntag: Fußweg Pont des Arts → Louvre (eigene Akzentfarbe) */
+const PONT_TO_LOUVRE_WALK_COLOR = "#f97316";
+
 const TRANSPORT_STYLES = {
   walk: {
     Icon: Footprints,
@@ -363,7 +366,11 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
                   if (isMetro) segColor = "#0078D4";
                   else if (isUber) segColor = "#8b6cda";
                   else if (isNewSegment && isWalkWithPrev) {
-                    segColor = palette[walkIdx % palette.length];
+                    if (prevLoc?.id === "pont-des-arts" && curLoc?.id === "louvre") {
+                      segColor = PONT_TO_LOUVRE_WALK_COLOR;
+                    } else {
+                      segColor = palette[walkIdx % palette.length];
+                    }
                     walkIdx++;
                   } else {
                     segColor = palette[walkIdx % palette.length];
@@ -449,8 +456,6 @@ export default function Timeline({ activeDay: externalDay, onDayChange, embedded
                 });
               })()}
             </div>
-
-            <div className="mt-6 pt-5 border-t border-glass-border" />
           </motion.div>
         </AnimatePresence>
       </div>

@@ -7,10 +7,6 @@ import { locations } from "@/data/trip";
 export default function Footer() {
   return (
     <footer className="relative py-20 sm:py-28 px-4 sm:px-6 overflow-hidden" style={{ backgroundColor: "#0d0a11" }}>
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-[0.10] mix-blend-luminosity pointer-events-none"
-        style={{ backgroundImage: "url(/images/events/pont-des-arts.jpg)" }}
-      />
       <div className="absolute inset-0 bg-gradient-to-b from-[#0d0a11] via-transparent to-[#0d0a11] pointer-events-none" />
       <div className="absolute inset-0 texture-noise pointer-events-none" />
       <div

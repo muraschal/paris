@@ -429,7 +429,11 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
                   return { stageColor: "#0078D4", exitWalkColor: ewColor };
                 }
                 if (isUber) return { stageColor: "#8b6cda", exitWalkColor: null };
-                const c = palette[walkColorIdx % palette.length];
+                const isPontToLouvreWalk =
+                  dayKeyForRoutes === "sunday"
+                  && seg.from.id === "pont-des-arts"
+                  && seg.to.id === "louvre";
+                const c = isPontToLouvreWalk ? "#f97316" : palette[walkColorIdx % palette.length];
                 walkColorIdx++;
                 return { stageColor: c, exitWalkColor: null };
               });

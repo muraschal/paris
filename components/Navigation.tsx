@@ -63,7 +63,7 @@ export default function Navigation() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.2 }}
-                className="w-full flex justify-center px-1"
+                className="w-full flex justify-center px-1 lg:hidden"
               >
                 <DayTabs
                   activeDay={activeDay}

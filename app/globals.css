@@ -31,7 +31,10 @@ html {
 
 @media (min-width: 1024px) {
   html {
+    /* snap-always auf Sektionen würde hier ruckelig wirken — nur Start-Kanten ausrichten */
     scroll-snap-type: y proximity;
+    /* Sanfteres Verhalten als smooth + Snap gleichzeitig (Wheel bleibt nativ) */
+    scroll-behavior: auto;
     /* Bottom dock (section nav + optional day row) — anchor targets stay clear */
     scroll-padding-bottom: 7.5rem;
   }

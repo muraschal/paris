@@ -47,9 +47,10 @@ const walkSegments: WalkSegment[] = [
   { from: "eiffelturm", to: "trocadero", day: "saturday" },
   { from: "trocadero", to: "fouquets", day: "saturday" },
   { from: "fouquets", to: "arc-de-triomphe", day: "saturday" },
-  // Sunday
-  { from: "notre-dame", to: "berthillon", day: "sunday" },
-  { from: "berthillon", to: "pont-des-arts", day: "sunday" },
+  // Sunday (Reihenfolge wie trip.ts: Berthillon → ND → Quais → Pont des Arts → Louvre)
+  { from: "berthillon", to: "notre-dame", day: "sunday" },
+  { from: "notre-dame", to: "quais-de-seine", day: "sunday" },
+  { from: "quais-de-seine", to: "pont-des-arts", day: "sunday" },
   { from: "pont-des-arts", to: "louvre", day: "sunday" },
 ];
 
