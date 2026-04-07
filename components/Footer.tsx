@@ -6,8 +6,19 @@ import { locations } from "@/data/trip";
 
 export default function Footer() {
   return (
-    <footer className="relative py-20 px-4 sm:px-6">
-      <div className="max-w-2xl mx-auto text-center">
+    <footer className="relative py-20 sm:py-28 px-4 sm:px-6 overflow-hidden" style={{ backgroundColor: "#0d0a11" }}>
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-[0.10] mix-blend-luminosity pointer-events-none"
+        style={{ backgroundImage: "url(/images/events/pont-des-arts.jpg)" }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0d0a11] via-transparent to-[#0d0a11] pointer-events-none" />
+      <div className="absolute inset-0 texture-noise pointer-events-none" />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 50% 60%, rgba(201,169,110,0.16) 0%, rgba(201,169,110,0.04) 45%, transparent 75%)" }}
+      />
+
+      <div className="max-w-2xl mx-auto text-center relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -26,10 +37,7 @@ export default function Footer() {
             <span className="text-gradient-gold">Bon voyage</span>
           </h3>
           <p className="text-text-secondary text-sm">
-            Marcel & Murielle · Paris 2026
-          </p>
-          <p className="text-text-muted text-xs mt-2 italic">
-            Maximale Romantik · Minimaler Stress · Paris comme il faut
+            M&M's · Paris 2026
           </p>
 
           {/* Quick Links Grid */}

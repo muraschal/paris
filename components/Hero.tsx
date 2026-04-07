@@ -28,7 +28,7 @@ export default function Hero() {
   const isPast = diff !== null && diff <= 0;
 
   return (
-    <section className="relative h-dvh w-full flex items-center justify-center overflow-hidden">
+    <section className="relative h-dvh w-full overflow-hidden">
       {/* Background gradient simulating Paris night sky */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d2b] via-[#0a0a1a] to-navy" />
 
@@ -57,26 +57,29 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 text-center px-6 max-w-lg">
+      {/* Content — true center via absolute + transform */}
+      <div
+        className="absolute z-10 left-1/2 top-1/2 w-full max-w-lg px-6 text-center"
+        style={{ transform: "translate(-50%, -50%)" }}
+      >
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 1, ease: "easeOut" }}
         >
           <p className="text-text-secondary text-sm tracking-[0.3em] uppercase mb-4">
             1.–3. Mai 2026
           </p>
 
-          <h1 className="text-[clamp(1.6rem,6.5vw,3.75rem)] font-light tracking-tight mb-3 whitespace-nowrap">
-            <span className="text-gradient-gold">Rendez-vous à Paris</span>
+          <h1 className="text-[clamp(2.2rem,8vw,4.5rem)] font-light tracking-tight mb-3 leading-[1.1]">
+            <span className="text-gradient-gold">Rendez-vous<br className="sm:hidden" /> à Paris</span>
           </h1>
 
           <p className="text-xl sm:text-2xl font-extralight text-text-primary/70 tracking-wide">
-            Murielle & Marcel
+            M&M's
           </p>
 
-          <div className="flex items-center justify-center gap-3 mt-7 mb-10">
+          <div className="flex items-center justify-center gap-3 mt-7 mb-8">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-gold opacity-40" />
             <span className="text-gold text-xs tracking-[0.2em] uppercase">Maison Souquet · Pigalle</span>
             <div className="h-px w-12 bg-gradient-to-l from-transparent to-gold opacity-40" />
@@ -84,40 +87,38 @@ export default function Hero() {
         </motion.div>
 
         {/* Countdown */}
-        {diff !== null && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            {isPast ? (
-              <p className="text-gold text-lg tracking-wide">Bon voyage! 🥂</p>
-            ) : (
-              <div className="flex items-center justify-center gap-1 sm:gap-3">
-                {[
-                  { value: pad(days), label: "Tage" },
-                  { value: pad(hours), label: "Std" },
-                  { value: pad(minutes), label: "Min" },
-                  { value: pad(seconds), label: "Sek" },
-                ].map((unit, i) => (
-                  <div key={unit.label} className="flex items-center gap-1 sm:gap-3">
-                    <div className="flex flex-col items-center">
-                      <span className="text-3xl sm:text-4xl font-extralight tracking-wider text-text-primary tabular-nums">
-                        {unit.value}
-                      </span>
-                      <span className="text-[10px] text-text-muted tracking-[0.15em] uppercase mt-1">
-                        {unit.label}
-                      </span>
-                    </div>
-                    {i < 3 && (
-                      <span className="text-gold-dim text-2xl font-extralight mb-4">:</span>
-                    )}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: diff !== null ? 1 : 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+        >
+          {isPast ? (
+            <p className="text-gold text-lg tracking-wide">Bon voyage! 🥂</p>
+          ) : (
+            <div className="flex items-center justify-center gap-1 sm:gap-3">
+              {[
+                { value: pad(days), label: "Tage" },
+                { value: pad(hours), label: "Std" },
+                { value: pad(minutes), label: "Min" },
+                { value: pad(seconds), label: "Sek" },
+              ].map((unit, i) => (
+                <div key={unit.label} className="flex items-center gap-1 sm:gap-3">
+                  <div className="flex flex-col items-center">
+                    <span className="text-3xl sm:text-4xl font-extralight tracking-wider text-text-primary tabular-nums">
+                      {unit.value}
+                    </span>
+                    <span className="text-[10px] text-text-muted tracking-[0.15em] uppercase mt-1">
+                      {unit.label}
+                    </span>
                   </div>
-                ))}
-              </div>
-            )}
-          </motion.div>
-        )}
+                  {i < 3 && (
+                    <span className="text-gold-dim text-2xl font-extralight mb-4">:</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </motion.div>
       </div>
 
       {/* Scroll indicator */}

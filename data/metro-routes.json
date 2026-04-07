@@ -1,0 +1,38 @@
+[
+  {
+    "from": "maison-souquet",
+    "to": "eiffelturm",
+    "day": "saturday",
+    "type": "metro",
+    "segments": [
+      {
+        "line": "2",
+        "lineColor": "#0078D4",
+        "direction": "Porte Dauphine",
+        "stations": [
+          { "name": "Blanche", "lat": 48.88346, "lng": 2.33370 },
+          { "name": "Place de Clichy", "lat": 48.88389, "lng": 2.32750 },
+          { "name": "Rome", "lat": 48.88213, "lng": 2.32165 },
+          { "name": "Villiers", "lat": 48.88126, "lng": 2.31534 },
+          { "name": "Monceau", "lat": 48.88031, "lng": 2.30917 },
+          { "name": "Courcelles", "lat": 48.87903, "lng": 2.30220 },
+          { "name": "Ternes", "lat": 48.87829, "lng": 2.29825 },
+          { "name": "Charles de Gaulle – Étoile", "lat": 48.87391, "lng": 2.29503 }
+        ]
+      },
+      {
+        "line": "6",
+        "lineColor": "#0078D4",
+        "direction": "Nation",
+        "stations": [
+          { "name": "Charles de Gaulle – Étoile", "lat": 48.87391, "lng": 2.29503 },
+          { "name": "Kléber", "lat": 48.87120, "lng": 2.29340 },
+          { "name": "Boissière", "lat": 48.86690, "lng": 2.29010 },
+          { "name": "Trocadéro", "lat": 48.86310, "lng": 2.28690 },
+          { "name": "Passy", "lat": 48.85770, "lng": 2.28580 },
+          { "name": "Bir-Hakeim", "lat": 48.85390, "lng": 2.28930 }
+        ]
+      }
+    ]
+  }
+]

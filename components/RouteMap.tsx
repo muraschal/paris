@@ -4,11 +4,13 @@ import "leaflet/dist/leaflet.css";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, ExternalLink, X, Camera } from "lucide-react";
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Polyline, CircleMarker, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import { locations, days, getLocation } from "@/data/trip";
 import type { Location } from "@/data/trip";
 import walkingRoutes from "@/data/walking-routes.json";
+import metroRoutes from "@/data/metro-routes.json";
+import uberRoutes from "@/data/uber-routes.json";
 
 const MAP_STYLES = {
   dark: {
@@ -28,6 +30,7 @@ const MAP_STYLES = {
 type MapStyle = keyof typeof MAP_STYLES;
 
 const DAY_COLORS = ["#c9a96e", "#7eb8e0", "#e0a07e"];
+const HOVER_COLOR = "#FF2D78";
 const DAY_KEY_MAP = ["friday", "saturday", "sunday"];
 
 const STAGE_PALETTES: string[][] = [
@@ -48,12 +51,13 @@ const CATEGORY_SVGS: Record<string, string> = {
   cafe: `<svg viewBox="0 0 24 24" fill="none" stroke="CCC" stroke-width="2" stroke-linecap="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8zM6 2v2M10 2v2M14 2v2"/></svg>`,
   entertainment: `<svg viewBox="0 0 24 24" fill="none" stroke="CCC" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
   shopping: `<svg viewBox="0 0 24 24" fill="none" stroke="CCC" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>`,
+  transport: `<svg viewBox="0 0 24 24" fill="none" stroke="CCC" stroke-width="2" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>`,
 };
 
 interface RouteSegment {
   from: Location;
   to: Location;
-  transport: "walk" | "uber" | "none";
+  transport: "walk" | "uber" | "metro" | "none";
   duration?: string;
   segIndex: number;
 }
@@ -106,6 +110,27 @@ function getMarkersForDay(dayIndex: number): MarkerInfo[] {
   });
 
   return Array.from(markerMap.values());
+}
+
+function getVisitNumberForEvent(dayIndex: number, eventIndex: number): number | null {
+  const evts = days[dayIndex]?.events;
+  if (!evts || !evts[eventIndex]?.locationId) return null;
+
+  let visitNum = 0;
+  let prevId: string | null = null;
+  let currentNum: number | null = null;
+  for (let i = 0; i < evts.length; i++) {
+    const locId = evts[i].locationId;
+    if (!locId || locId === prevId) {
+      if (i === eventIndex) return currentNum;
+      continue;
+    }
+    visitNum++;
+    prevId = locId;
+    currentNum = visitNum;
+    if (i === eventIndex) return visitNum;
+  }
+  return currentNum;
 }
 
 function getSegmentsForDay(dayIndex: number): RouteSegment[] {
@@ -174,33 +199,42 @@ function arcMidpoint(from: [number, number], to: [number, number], bowFactor = 0
   return [midLat + dLng * bowFactor * 0.5, midLng - dLat * bowFactor * 0.5];
 }
 
-function createIcon(color: string, category: string, name: string, visitNumbers?: number[]) {
+function createIcon(color: string, category: string, name: string, visitNumbers?: number[], highlighted?: boolean) {
   const escapedName = name.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
-  const svg = (CATEGORY_SVGS[category] || CATEGORY_SVGS.landmark).replace(/CCC/g, color);
+  const hc = highlighted ? HOVER_COLOR : color;
+  const svg = (CATEGORY_SVGS[category] || CATEGORY_SVGS.landmark).replace(/CCC/g, hc);
 
   let numberBadge = "";
   if (visitNumbers && visitNumbers.length > 0) {
     const label = visitNumbers.join("·");
     const w = visitNumbers.length > 1 ? "auto" : "20px";
     const pad = visitNumbers.length > 1 ? "padding:0 5px;" : "";
-    numberBadge = `<div style="position:absolute;top:-8px;right:-8px;min-width:20px;width:${w};height:20px;border-radius:10px;background:${color};color:#0a0a1a;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;border:2px solid #0a0a1a;${pad}">${label}</div>`;
+    numberBadge = `<div style="position:absolute;top:-8px;right:-8px;min-width:20px;width:${w};height:20px;border-radius:10px;background:${hc};color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;border:2px solid #0a0a1a;${pad}">${label}</div>`;
   }
+
+  const scale = highlighted ? "transform:scale(1.4);" : "";
+  const glow = highlighted
+    ? `box-shadow: 0 0 28px ${HOVER_COLOR}aa, 0 0 12px ${HOVER_COLOR}66;`
+    : `box-shadow: 0 0 14px ${color}40, 0 0 4px ${color}25;`;
+  const labelStyle = highlighted ? `font-weight:700;opacity:1;color:${HOVER_COLOR};` : "";
+  const cursor = "cursor:pointer;";
 
   return L.divIcon({
     className: "custom-marker",
     html: `
-      <div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+      <div style="position:relative;display:flex;flex-direction:column;align-items:center;transition:transform 0.2s ease;${scale}${cursor}">
         <div style="
           position:relative;
           width: 30px; height: 30px; border-radius: 50%;
-          background: ${color}18; border: 2px solid ${color};
+          background: ${highlighted ? `${HOVER_COLOR}30` : `${color}18`}; border: 2.5px solid ${hc};
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 0 14px ${color}40, 0 0 4px ${color}25;
+          ${glow}
+          transition: all 0.2s ease;
         ">
           <div style="width:14px;height:14px;">${svg}</div>
           ${numberBadge}
         </div>
-        <div class="marker-label">${escapedName}</div>
+        <div class="marker-label" style="${labelStyle}">${escapedName}</div>
       </div>
     `,
     iconSize: [30, 48],
@@ -210,9 +244,10 @@ function createIcon(color: string, category: string, name: string, visitNumbers?
 
 function createTransportLabel(segment: RouteSegment, arcMid: [number, number], stageColor?: string) {
   const isUber = segment.transport === "uber";
-  const emoji = isUber ? "🚕" : "🚶";
-  const text = segment.duration || (isUber ? "Uber" : "");
-  const bg = isUber ? "rgba(100,70,200,0.8)" : stageColor ? `${stageColor}cc` : "rgba(60,120,60,0.7)";
+  const isMetro = segment.transport === "metro";
+  const emoji = isMetro ? "🚇" : isUber ? "🚕" : "🚶";
+  const text = segment.duration || (isMetro ? "Métro" : isUber ? "Uber" : "");
+  const bg = isMetro ? "rgba(0,120,212,0.85)" : isUber ? "rgba(100,70,200,0.8)" : stageColor ? `${stageColor}cc` : "rgba(60,120,60,0.7)";
 
   return {
     position: arcMid,
@@ -232,7 +267,7 @@ function FitBounds({ locs }: { locs: Location[] }) {
       const bounds = L.latLngBounds(
         locs.map((l) => [l.coordinates.lat, l.coordinates.lng] as [number, number])
       );
-      map.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 });
+      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 });
     } else if (locs.length === 1) {
       map.setView([locs[0].coordinates.lat, locs[0].coordinates.lng], 14);
     }
@@ -240,8 +275,30 @@ function FitBounds({ locs }: { locs: Location[] }) {
   return null;
 }
 
-export default function RouteMap() {
-  const [activeDay, setActiveDay] = useState<number | null>(0);
+interface HoveredSegment {
+  fromId: string;
+  toId: string;
+  source?: "map" | "timeline";
+}
+
+interface RouteMapProps {
+  activeDay?: number;
+  onDayChange?: (day: number) => void;
+  compact?: boolean;
+  hoveredLocationId?: string | null;
+  hoveredEventKey?: string | null;
+  hoveredSegment?: HoveredSegment | null;
+  onHoverLocation?: (id: string | null) => void;
+  onHoverSegment?: (seg: HoveredSegment | null) => void;
+}
+
+export default function RouteMap({ activeDay: externalDay, onDayChange, compact, hoveredLocationId, hoveredEventKey, hoveredSegment, onHoverLocation, onHoverSegment }: RouteMapProps = {}) {
+  const [internalDay, setInternalDay] = useState<number | null>(0);
+  const activeDay = externalDay ?? internalDay;
+  const handleDayChange = (day: number | null) => {
+    if (day !== null && onDayChange) onDayChange(day);
+    if (!onDayChange) setInternalDay(day);
+  };
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [mapStyle, setMapStyle] = useState<MapStyle>("dark");
 
@@ -277,98 +334,297 @@ export default function RouteMap() {
 
   const hasUber = segments.some((s) => s.transport === "uber");
   const hasWalk = segments.some((s) => s.transport === "walk");
+  const hasMetro = segments.some((s) => s.transport === "metro");
 
   return (
-    <section id="map" className="relative py-20">
-      {/* Header + Day Filter — centered */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-10"
-        >
-          <p className="text-text-secondary text-xs tracking-[0.25em] uppercase mb-3">
-            Die Route
-          </p>
-          <h2 className="text-3xl sm:text-4xl font-light tracking-tight">
-            <span className="text-gradient-gold">Unsere Stops</span>
-          </h2>
-        </motion.div>
+    <section id="map" className={compact ? "relative h-full" : "relative py-20"}>
+      {/* Header + Day Filter — only in standalone mode */}
+      {!compact && (
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-10"
+          >
+            <p className="text-text-secondary text-xs tracking-[0.25em] uppercase mb-3">
+              Die Route
+            </p>
+            <h2 className="text-3xl sm:text-5xl font-light tracking-tight">
+              <span className="text-gradient-gold">L&apos;Itinéraire</span>
+            </h2>
+            <p className="text-text-secondary text-sm sm:text-base font-light mt-3 tracking-wide">
+              Unsere Stops durch Paris
+            </p>
+          </motion.div>
 
-        {/* Day Filter */}
-        <div className="flex gap-2 justify-center mb-6">
-          {DAY_LABELS.map((label, i) => (
-            <button
-              key={label}
-              onClick={() => setActiveDay(activeDay === i ? null : i)}
-              className={`px-4 py-2 rounded-full text-xs tracking-wide transition-all duration-300 ${
-                activeDay === i
-                  ? "glass-strong text-text-primary"
-                  : "text-text-muted hover:text-text-secondary"
-              }`}
-            >
-              <span
-                className="inline-block w-2 h-2 rounded-full mr-2"
-                style={{ backgroundColor: DAY_COLORS[i], opacity: activeDay === i ? 1 : 0.4 }}
-              />
-              {label}
-            </button>
-          ))}
+          {/* Day Filter */}
+          <div className="flex gap-2 justify-center mb-6">
+            {DAY_LABELS.map((label, i) => (
+              <button
+                key={label}
+                onClick={() => handleDayChange(activeDay === i ? null : i)}
+                className={`px-4 py-2 rounded-full text-xs tracking-wide transition-all duration-300 ${
+                  activeDay === i
+                    ? "glass-strong text-text-primary"
+                    : "text-text-muted hover:text-text-secondary"
+                }`}
+              >
+                <span
+                  className="inline-block w-2 h-2 rounded-full mr-2"
+                  style={{ backgroundColor: DAY_COLORS[i], opacity: activeDay === i ? 1 : 0.4 }}
+                />
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Map — full width */}
-      <div className="px-3 sm:px-4 lg:px-6">
+      {/* Map */}
+      <div className={compact ? "h-full" : "px-3 sm:px-4 lg:px-6"}>
         <motion.div
-          className="relative h-[55vh] sm:h-[65vh] lg:h-[75vh] rounded-2xl overflow-hidden glass glow-gold"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          className={`relative overflow-hidden ${compact ? "h-full" : "h-[55vh] sm:h-[65vh] lg:h-[75vh] rounded-2xl glass glow-gold"}`}
+          initial={compact ? { opacity: 1 } : { opacity: 0, y: 30 }}
+          whileInView={compact ? { opacity: 1 } : { opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, delay: 0.15 }}
+          transition={compact ? { duration: 0 } : { duration: 0.7, delay: 0.15 }}
         >
           <MapContainer
             center={center}
             zoom={13}
-            className={`w-full h-full rounded-2xl ${mapStyle === "light" ? "map-light" : ""} ${mapStyle === "satellite" ? "map-satellite" : ""}`}
+            className={`w-full h-full ${compact ? "" : "rounded-2xl"} ${mapStyle === "light" ? "map-light" : ""} ${mapStyle === "satellite" ? "map-satellite" : ""}`}
             zoomControl={false}
             attributionControl={false}
           >
             <TileLayer key={mapStyle} url={MAP_STYLES[mapStyle].url} />
 
-            {/* Route segments between stops — each walk stage gets its own color */}
-            {segments.map((seg, i) => {
+            {/* Route segments between stops */}
+            {(() => {
+              const palette = activeDay !== null ? STAGE_PALETTES[activeDay] : STAGE_PALETTES[0];
+              const dayKeyForRoutes = activeDay !== null ? DAY_KEY_MAP[activeDay] : null;
+              let walkColorIdx = 0;
+
+              const segColors: { stageColor: string; exitWalkColor: string | null }[] = segments.map((seg) => {
+                const isUber = seg.transport === "uber";
+                const isMetro = seg.transport === "metro";
+
+                if (isMetro) {
+                  let ewColor: string | null = null;
+                  if (dayKeyForRoutes) {
+                    const mr = metroRoutes.find((r) => r.from === seg.from.id && r.to === seg.to.id && r.day === dayKeyForRoutes);
+                    if (mr) {
+                      const ls = mr.segments[mr.segments.length - 1];
+                      const lst = ls.stations[ls.stations.length - 1];
+                      const ew = walkingRoutes.find((r) => r.to === seg.to.id && r.day === dayKeyForRoutes
+                        && Math.abs((getLocation(r.from)?.coordinates.lat ?? 0) - lst.lat) < 0.002
+                        && Math.abs((getLocation(r.from)?.coordinates.lng ?? 0) - lst.lng) < 0.002);
+                      if (ew) {
+                        ewColor = palette[walkColorIdx % palette.length];
+                        walkColorIdx++;
+                      }
+                    }
+                  }
+                  return { stageColor: "#0078D4", exitWalkColor: ewColor };
+                }
+                if (isUber) return { stageColor: "#8b6cda", exitWalkColor: null };
+                const c = palette[walkColorIdx % palette.length];
+                walkColorIdx++;
+                return { stageColor: c, exitWalkColor: null };
+              });
+
+              return segments.map((seg, i) => {
               const from: [number, number] = [seg.from.coordinates.lat, seg.from.coordinates.lng];
               const to: [number, number] = [seg.to.coordinates.lat, seg.to.coordinates.lng];
               const isUber = seg.transport === "uber";
+              const isMetro = seg.transport === "metro";
+              const isNonWalk = isUber || isMetro;
 
-              const palette = activeDay !== null ? STAGE_PALETTES[activeDay] : STAGE_PALETTES[0];
-              const walkIndex = isUber ? 0 : segments.filter((s, j) => j <= i && s.transport === "walk").length - 1;
-              const stageColor = isUber ? "#8b6cda" : palette[walkIndex % palette.length];
+              const stageColor = segColors[i].stageColor;
+              const exitWalkStageColor = segColors[i].exitWalkColor;
 
               const dayKey = activeDay !== null ? DAY_KEY_MAP[activeDay] : null;
-              const walkRoute = !isUber && dayKey
+
+              const isSat = mapStyle === "satellite";
+
+              /* ── Detailed metro route ── */
+              if (isMetro && dayKey) {
+                const metroRoute = metroRoutes.find(
+                  (r) => r.from === seg.from.id && r.to === seg.to.id && r.day === dayKey
+                );
+                if (metroRoute) {
+                  const lastMetroSeg = metroRoute.segments[metroRoute.segments.length - 1];
+                  const lastStation = lastMetroSeg.stations[lastMetroSeg.stations.length - 1];
+                  const exitWalk = walkingRoutes.find(
+                    (r) => r.day === dayKey
+                      && Math.abs((getLocation(r.from)?.coordinates.lat ?? 0) - lastStation.lat) < 0.002
+                      && Math.abs((getLocation(r.from)?.coordinates.lng ?? 0) - lastStation.lng) < 0.002
+                      && r.to === seg.to.id
+                  );
+                  const exitWalkFromLoc = exitWalk ? getLocation(exitWalk.from) : null;
+                  const metroHubId = exitWalkFromLoc?.id;
+
+                  const metroSegHighlighted = hoveredSegment != null
+                    && hoveredSegment.fromId === seg.from.id
+                    && hoveredSegment.toId === (metroHubId || seg.to.id);
+                  const walkSegHighlighted = exitWalk && hoveredSegment != null
+                    && hoveredSegment.fromId === (metroHubId || "")
+                    && hoveredSegment.toId === seg.to.id;
+
+                  const metroDimmed = (hoveredSegment != null || hoveredEventKey != null) && !metroSegHighlighted;
+                  const metroOpacity = metroDimmed ? 0.15 : metroSegHighlighted ? 1 : 0.85;
+
+                  const metroHoverHandlers = {
+                    mouseover: () => onHoverSegment?.({ fromId: seg.from.id, toId: metroHubId || seg.to.id }),
+                    mouseout: () => onHoverSegment?.(null),
+                  };
+                  return (
+                    <span key={`seg-${i}`}>
+                      {metroRoute.segments.map((lineSeg, li) => {
+                        const lineColor = lineSeg.lineColor;
+                        const pts: [number, number][] = lineSeg.stations.map((s) => [s.lat, s.lng]);
+                        const weight = metroSegHighlighted ? 6 : 4;
+                        const glowW = metroSegHighlighted ? 12 : 8;
+                        return (
+                          <span key={`metro-line-${li}`}>
+                            <Polyline
+                              positions={pts}
+                              pathOptions={{ color: lineColor, weight: glowW, opacity: metroOpacity * 0.2 }}
+                            />
+                            <Polyline
+                              positions={pts}
+                              pathOptions={{ color: lineColor, weight, opacity: metroOpacity }}
+                            />
+                            <Polyline
+                              positions={pts}
+                              pathOptions={{ color: "transparent", weight: 20, opacity: 0 }}
+                              eventHandlers={metroHoverHandlers}
+                            />
+                            {/* Station dots */}
+                            {lineSeg.stations.map((station, si) => {
+                              const isTerminal = si === 0 || si === lineSeg.stations.length - 1;
+                              const isTransfer = station.name.includes("Étoile");
+                              return (
+                                <CircleMarker
+                                  key={`station-${li}-${si}`}
+                                  center={[station.lat, station.lng]}
+                                  radius={isTransfer ? 5 : isTerminal ? 4 : 3}
+                                  pathOptions={{
+                                    color: lineColor,
+                                    fillColor: isTransfer ? "#fff" : lineColor,
+                                    fillOpacity: metroOpacity,
+                                    weight: isTransfer ? 2.5 : 1.5,
+                                    opacity: metroOpacity,
+                                  }}
+                                >
+                                  <Tooltip
+                                    direction="top"
+                                    offset={[0, -6]}
+                                    className="metro-station-tooltip"
+                                  >
+                                    <span style={{ fontSize: "10px", fontWeight: isTransfer ? 700 : 500 }}>
+                                      {station.name}
+                                      {isTransfer ? " ⇄" : ""}
+                                    </span>
+                                  </Tooltip>
+                                </CircleMarker>
+                              );
+                            })}
+                            {/* Line number label at midpoint */}
+                            {(() => {
+                              const midSi = Math.floor(pts.length / 2);
+                              const midPt = pts[midSi];
+                              return (
+                                <Marker
+                                  position={midPt}
+                                  icon={L.divIcon({
+                                    className: "custom-marker",
+                                    html: `<div class="transport-badge" style="background:${lineColor}dd;font-weight:700;font-size:10px;letter-spacing:0.5px">🚇 M${lineSeg.line}</div>`,
+                                    iconSize: [1, 1],
+                                    iconAnchor: [0, 0],
+                                  })}
+                                  interactive={false}
+                                />
+                              );
+                            })()}
+                          </span>
+                        );
+                      })}
+                      {/* Walking connection after metro (e.g. Bir-Hakeim → Eiffelturm) */}
+                      {(() => {
+                        if (!exitWalk || !metroHubId) return null;
+                        const walkPts = exitWalk.points as [number, number][];
+                        const walkColor = exitWalkStageColor || stageColor;
+                        const walkHl = walkSegHighlighted;
+                        const walkDim = (hoveredSegment != null || hoveredEventKey != null) && !walkHl;
+                        const walkOpacity = walkDim ? 0.15 : walkHl ? 1 : 0.85;
+                        const wW = walkHl ? 5 : 3;
+                        const walkHoverHandlers = {
+                          mouseover: () => onHoverSegment?.({ fromId: metroHubId, toId: seg.to.id }),
+                          mouseout: () => onHoverSegment?.(null),
+                        };
+                        return (
+                          <span>
+                            <Polyline
+                              positions={walkPts}
+                              pathOptions={{ color: walkColor, weight: wW + 4, opacity: walkOpacity * 0.15 }}
+                            />
+                            <Polyline
+                              positions={walkPts}
+                              pathOptions={{ color: walkColor, weight: wW, opacity: walkOpacity * 0.8, dashArray: "4 6" }}
+                            />
+                            <Polyline
+                              positions={walkPts}
+                              pathOptions={{ color: "transparent", weight: 20, opacity: 0 }}
+                              eventHandlers={walkHoverHandlers}
+                            />
+                          </span>
+                        );
+                      })()}
+                    </span>
+                  );
+                }
+              }
+
+              /* ── Walking / Uber / fallback metro ── */
+              const segHighlighted = hoveredSegment != null
+                && seg.from.id === hoveredSegment.fromId
+                && seg.to.id === hoveredSegment.toId;
+              const segDimmed = (hoveredSegment != null || hoveredEventKey != null) && !segHighlighted;
+
+              const walkRoute = !isNonWalk && dayKey
                 ? walkingRoutes.find((r) => r.from === seg.from.id && r.to === seg.to.id && r.day === dayKey)
+                : null;
+              const uberRoute = isUber && dayKey
+                ? uberRoutes.find((r) => r.from === seg.from.id && r.to === seg.to.id && r.day === dayKey)
                 : null;
 
               const routePoints: [number, number][] = walkRoute
                 ? walkRoute.points as [number, number][]
-                : (() => {
-                    const pairKey = [seg.from.id, seg.to.id].sort().join("-");
-                    const pairCount = segments.filter((s, j) => j < i && [s.from.id, s.to.id].sort().join("-") === pairKey).length;
-                    const bow = 0.18 * (pairCount % 2 === 0 ? 1 : -1) * (1 + pairCount * 0.3);
-                    return arcBetween(from, to, 24, bow);
-                  })();
+                : uberRoute
+                  ? uberRoute.points as [number, number][]
+                  : (() => {
+                      const pairKey = [seg.from.id, seg.to.id].sort().join("-");
+                      const pairCount = segments.filter((s, j) => j < i && [s.from.id, s.to.id].sort().join("-") === pairKey).length;
+                      const bow = 0.18 * (pairCount % 2 === 0 ? 1 : -1) * (1 + pairCount * 0.3);
+                      return arcBetween(from, to, 24, bow);
+                    })();
 
               const midIdx = Math.floor(routePoints.length / 2);
               const mid: [number, number] = routePoints[midIdx] || arcMidpoint(from, to, 0.15);
-              const tLabel = seg.transport !== "none" ? createTransportLabel(seg, mid, isUber ? undefined : stageColor) : null;
+              const tLabel = seg.transport !== "none" ? createTransportLabel(seg, mid, (isNonWalk && !uberRoute) ? undefined : stageColor) : null;
 
-              const isSat = mapStyle === "satellite";
-              const mainWeight = isSat ? 5 : 3;
-              const glowWeight = isSat ? 10 : 6;
-              const mainOpacity = walkRoute ? (isSat ? 0.95 : 0.8) : 0.6;
+              const segColor = stageColor;
+              const mainWeight = segHighlighted ? (isSat ? 7 : 5) : (isSat ? 5 : 3);
+              const glowWeight = segHighlighted ? (isSat ? 14 : 10) : (isSat ? 10 : 6);
+              const hasRealRoute = walkRoute || uberRoute;
+              const mainOpacity = segDimmed ? 0.15 : segHighlighted ? 1 : hasRealRoute ? (isSat ? 0.95 : 0.8) : 0.6;
+
+              const segHoverHandlers = {
+                mouseover: () => onHoverSegment?.({ fromId: seg.from.id, toId: seg.to.id }),
+                mouseout: () => onHoverSegment?.(null),
+              };
 
               return (
                 <span key={`seg-${i}`}>
@@ -380,16 +636,22 @@ export default function RouteMap() {
                   )}
                   <Polyline
                     positions={routePoints}
-                    pathOptions={{ color: stageColor, weight: glowWeight, opacity: isSat ? 0.2 : 0.1 }}
+                    pathOptions={{ color: segColor, weight: glowWeight, opacity: segHighlighted ? 0.3 : isSat ? 0.2 : 0.1 }}
                   />
                   <Polyline
                     positions={routePoints}
                     pathOptions={{
-                      color: stageColor,
+                      color: segColor,
                       weight: mainWeight,
                       opacity: mainOpacity,
-                      dashArray: isUber ? "3 7" : walkRoute ? undefined : "6 5",
+                      dashArray: segHighlighted ? undefined : isUber ? "3 7" : walkRoute ? undefined : "6 5",
                     }}
+                  />
+                  {/* Invisible wide hit-area for hover */}
+                  <Polyline
+                    positions={routePoints}
+                    pathOptions={{ color: "transparent", weight: 20, opacity: 0 }}
+                    eventHandlers={segHoverHandlers}
                   />
                   {tLabel && (
                     <Marker
@@ -400,28 +662,62 @@ export default function RouteMap() {
                   )}
                 </span>
               );
-            })}
+            });
+            })()}
 
             {/* Location markers with visit numbers */}
-            {markers.map((m) => (
-              <Marker
-                key={m.location.id}
-                position={[m.location.coordinates.lat, m.location.coordinates.lng]}
-                icon={createIcon(
-                  color,
-                  m.location.category,
-                  m.location.name,
-                  activeDay !== null ? m.visitNumbers : undefined
-                )}
-                eventHandlers={{ click: () => handleMarkerClick(m.location) }}
-              />
-            ))}
+            {markers.filter((m) => !m.location.hidden).map((m) => {
+              const anySegHover = hoveredSegment != null;
+              const isSegEndpoint = anySegHover && (hoveredSegment!.fromId === m.location.id || hoveredSegment!.toId === m.location.id);
+              const eventMatchesPoi = (() => {
+                if (!hoveredEventKey || activeDay === null) return false;
+                const [, eiStr] = hoveredEventKey.split("-");
+                const locId = days[activeDay]?.events[parseInt(eiStr, 10)]?.locationId;
+                return locId === m.location.id;
+              })();
+              const poiHighlighted = hoveredLocationId === m.location.id
+                || eventMatchesPoi
+                || (anySegHover && isSegEndpoint);
+              const poiDimmed = (hoveredLocationId != null || hoveredEventKey != null || anySegHover) && !poiHighlighted;
+
+              let displayNumbers = activeDay !== null ? m.visitNumbers : undefined;
+              if (hoveredEventKey && activeDay !== null) {
+                const [, eiStr] = hoveredEventKey.split("-");
+                const ei = parseInt(eiStr, 10);
+                const hoveredLocId = days[activeDay]?.events[ei]?.locationId;
+                if (hoveredLocId === m.location.id) {
+                  const singleNum = getVisitNumberForEvent(activeDay, ei);
+                  if (singleNum != null) displayNumbers = [singleNum];
+                }
+              }
+
+              const markerKey = `${m.location.id}-${poiHighlighted ? "h" : "n"}-${displayNumbers?.join(",") ?? ""}`;
+              return (
+                <Marker
+                  key={markerKey}
+                  position={[m.location.coordinates.lat, m.location.coordinates.lng]}
+                  icon={createIcon(
+                    color,
+                    m.location.category,
+                    m.location.name,
+                    displayNumbers,
+                    poiHighlighted
+                  )}
+                  opacity={poiDimmed ? 0.3 : 1}
+                  eventHandlers={{
+                    click: () => handleMarkerClick(m.location),
+                    mouseover: () => onHoverLocation?.(m.location.id),
+                    mouseout: () => onHoverLocation?.(null),
+                  }}
+                />
+              );
+            })}
 
             <FitBounds locs={uniqueLocations} />
           </MapContainer>
 
           {/* Map Style Switcher */}
-          <div className="absolute top-3 right-3 z-[1000] flex rounded-lg overflow-hidden glass-strong">
+          <div className={`absolute z-[400] flex rounded-lg overflow-hidden glass-strong ${compact ? "bottom-3 left-3" : "top-3 right-3"}`}>
             {(Object.keys(MAP_STYLES) as MapStyle[]).map((key) => (
               <button
                 key={key}
@@ -439,8 +735,8 @@ export default function RouteMap() {
         </motion.div>
       </div>
 
-      {/* Legend + Bottom Sheet — centered */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+      {/* Legend + Bottom Sheet — only in standalone mode */}
+      {!compact && <div className="max-w-3xl mx-auto px-4 sm:px-6">
         {/* Legend */}
         {activeDay !== null && segments.length > 0 && (
           <motion.div
@@ -462,6 +758,12 @@ export default function RouteMap() {
                   })()}
                 </svg>
                 Etappen
+              </span>
+            )}
+            {hasMetro && (
+              <span className="flex items-center gap-1.5">
+                <svg width="20" height="6"><line x1="0" y1="3" x2="20" y2="3" stroke="#0078D4" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7" /></svg>
+                🚇 Métro
               </span>
             )}
             {hasUber && (
@@ -523,7 +825,7 @@ export default function RouteMap() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </div>}
     </section>
   );
 }

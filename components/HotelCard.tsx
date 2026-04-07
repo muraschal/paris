@@ -2,10 +2,26 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Phone, Globe, Clock, Waves, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Globe,
+  Clock,
+  Waves,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  Sparkles,
+  KeyRound,
+} from "lucide-react";
 import { hotel } from "@/data/trip";
 
 const HOTEL_IMAGES = [
+  {
+    url: "https://www.maisonsouquet.com/wp-content/uploads/2024/02/MS-Salon-des-Petits-Bonheurs-2b.jpg",
+    caption: "Salon des Petits Bonheurs",
+  },
   {
     url: "https://www.maisonsouquet.com/wp-content/uploads/2024/02/MS-Salon-1001-nuits_2-1536x1024.jpg",
     caption: "Salon des 1001 Nuits",
@@ -32,12 +48,41 @@ const HOTEL_IMAGES = [
   },
 ];
 
+const HIGHLIGHTS = [
+  {
+    icon: Star,
+    title: "5 étoiles · Boutique",
+    text: "20 Zimmer, jedes ein Unikat. Design von Jacques Garcia — der Mann hinter dem Pariser Hôtel Costes.",
+  },
+  {
+    icon: Sparkles,
+    title: "Maison de plaisir",
+    text: "Im 19. Jh. ein geheimes Vergnügungshaus — die Zimmer tragen noch die Namen berühmter Kurtisanen.",
+  },
+  {
+    icon: Waves,
+    title: "Salon d'Eau — privat",
+    text: "Hammam & Pool exklusiv für uns gebucht. Osmanisches Baderitual, Dampf, warmes Licht. 1h pure Ruhe.",
+  },
+  {
+    icon: KeyRound,
+    title: "Pigalle · Montmartre",
+    text: "100m zum Moulin Rouge, 10 Min zu Fuss zum Sacré-Cœur. Das kreativste Viertel von Paris.",
+  },
+];
+
 export default function HotelCard() {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  const next = useCallback(() => setCurrent((c) => (c + 1) % HOTEL_IMAGES.length), []);
-  const prev = useCallback(() => setCurrent((c) => (c - 1 + HOTEL_IMAGES.length) % HOTEL_IMAGES.length), []);
+  const next = useCallback(
+    () => setCurrent((c) => (c + 1) % HOTEL_IMAGES.length),
+    []
+  );
+  const prev = useCallback(
+    () => setCurrent((c) => (c - 1 + HOTEL_IMAGES.length) % HOTEL_IMAGES.length),
+    []
+  );
 
   useEffect(() => {
     if (paused) return;
@@ -46,161 +91,204 @@ export default function HotelCard() {
   }, [paused, next]);
 
   return (
-    <section id="hotel" className="relative py-20 px-4 sm:px-6">
-      <div className="max-w-5xl mx-auto">
+    <section
+      id="hotel"
+      className="relative min-h-dvh flex flex-col justify-center py-16 sm:py-24 px-4 sm:px-6 lg:snap-start lg:snap-always scroll-mt-0"
+      style={{ backgroundColor: "#0c0b16" }}
+    >
+      <div className="absolute inset-0 texture-noise pointer-events-none" />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 0%, rgba(201,169,110,0.12) 0%, transparent 55%)",
+        }}
+      />
+
+      <div className="max-w-6xl mx-auto relative z-10 w-full">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7 }}
+          className="text-center mb-10"
         >
-          <p className="text-text-secondary text-xs tracking-[0.25em] uppercase mb-3 text-center">
-            Unser Zuhause in Paris
+          <p className="text-text-secondary text-xs tracking-[0.25em] uppercase mb-3">
+            Unser Zuhause in Montmartre
           </p>
-          <h2 className="text-3xl sm:text-4xl font-light text-center mb-10 tracking-tight">
-            <span className="text-gradient-gold">Maison Souquet</span>
+          <h2 className="text-3xl sm:text-5xl font-light tracking-tight mb-3">
+            <span className="text-gradient-gold">La Maison</span>
           </h2>
+          <p className="text-text-secondary text-sm sm:text-base font-light tracking-wide">
+            Maison Souquet · Hôtel 5 étoiles
+          </p>
         </motion.div>
 
-        <motion.div
-          className="relative rounded-2xl overflow-hidden"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, delay: 0.15 }}
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
-          {/* Image Slideshow */}
-          <div className="relative aspect-[16/9] sm:aspect-[2.2/1] overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={current}
-                src={HOTEL_IMAGES[current].url}
-                alt={HOTEL_IMAGES[current].caption}
-                className="absolute inset-0 w-full h-full object-cover"
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.8 }}
-              />
-            </AnimatePresence>
-
-            {/* Gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/40 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-navy/30 to-transparent" />
-
-            {/* Nav arrows */}
-            <button
-              onClick={prev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full glass hover:glass-strong transition-all opacity-0 group-hover:opacity-100 sm:opacity-60 hover:!opacity-100"
-              aria-label="Vorheriges Bild"
-            >
-              <ChevronLeft className="w-4 h-4 text-white/80" />
-            </button>
-            <button
-              onClick={next}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full glass hover:glass-strong transition-all opacity-0 group-hover:opacity-100 sm:opacity-60 hover:!opacity-100"
-              aria-label="Nächstes Bild"
-            >
-              <ChevronRight className="w-4 h-4 text-white/80" />
-            </button>
-
-            {/* Dots */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-              {HOTEL_IMAGES.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrent(i)}
-                  className={`h-1 rounded-full transition-all duration-500 ${
-                    i === current ? "w-6 bg-gold" : "w-1.5 bg-white/30 hover:bg-white/50"
-                  }`}
-                  aria-label={`Bild ${i + 1}`}
-                />
-              ))}
-            </div>
-
-            {/* Caption */}
-            <div className="absolute bottom-10 left-6 sm:left-8">
+        {/* Main content: Image + Info side by side on desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start">
+          {/* Slideshow — takes 3/5 on desktop */}
+          <motion.div
+            className="relative rounded-2xl overflow-hidden lg:col-span-3"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+          >
+            <div className="relative aspect-[4/3] sm:aspect-[16/10] overflow-hidden">
               <AnimatePresence mode="wait">
-                <motion.p
+                <motion.img
                   key={current}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.4 }}
-                  className="text-[10px] text-white/50 tracking-[0.2em] uppercase"
-                >
-                  {HOTEL_IMAGES[current].caption}
-                </motion.p>
+                  src={HOTEL_IMAGES[current].url}
+                  alt={HOTEL_IMAGES[current].caption}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8 }}
+                />
               </AnimatePresence>
-            </div>
-          </div>
 
-          {/* Info Card overlaying bottom of image */}
-          <div className="relative -mt-1 glass-gold rounded-b-2xl p-6 sm:p-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-4 h-4 text-gold mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm text-text-primary">{hotel.address}</p>
-                    <a
-                      href={hotel.googleMapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-gold/70 hover:text-gold transition-colors flex items-center gap-1 mt-1"
-                    >
-                      Google Maps <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/30 to-transparent" />
 
-                <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-gold shrink-0" />
-                  <a href={`tel:${hotel.phone}`} className="text-sm text-text-primary hover:text-gold transition-colors">
-                    {hotel.phone}
-                  </a>
-                </div>
+              <button
+                onClick={prev}
+                className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full glass hover:glass-strong transition-all sm:opacity-60 hover:!opacity-100"
+                aria-label="Vorheriges Bild"
+              >
+                <ChevronLeft className="w-4 h-4 text-white/80" />
+              </button>
+              <button
+                onClick={next}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full glass hover:glass-strong transition-all sm:opacity-60 hover:!opacity-100"
+                aria-label="Nächstes Bild"
+              >
+                <ChevronRight className="w-4 h-4 text-white/80" />
+              </button>
 
-                <div className="flex items-center gap-3">
-                  <Globe className="w-4 h-4 text-gold shrink-0" />
-                  <a
-                    href={hotel.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-text-primary hover:text-gold transition-colors"
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {HOTEL_IMAGES.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrent(i)}
+                    className={`h-1 rounded-full transition-all duration-500 ${
+                      i === current
+                        ? "w-6 bg-gold"
+                        : "w-1.5 bg-white/30 hover:bg-white/50"
+                    }`}
+                    aria-label={`Bild ${i + 1}`}
+                  />
+                ))}
+              </div>
+
+              <div className="absolute bottom-10 left-6">
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={current}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.4 }}
+                    className="text-[10px] text-white/50 tracking-[0.2em] uppercase"
                   >
-                    maisonsouquet.com
-                  </a>
-                </div>
+                    {HOTEL_IMAGES[current].caption}
+                  </motion.p>
+                </AnimatePresence>
               </div>
+            </div>
+          </motion.div>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-4 h-4 text-gold shrink-0" />
-                  <p className="text-sm text-text-primary">
-                    Check-in <span className="text-gold font-medium">Fr 14:00</span>
-                    <span className="text-text-muted mx-2">·</span>
-                    Check-out <span className="text-gold font-medium">So 12:00</span>
-                  </p>
-                </div>
-
+          {/* Info panel — takes 2/5 on desktop */}
+          <motion.div
+            className="lg:col-span-2 space-y-5"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, delay: 0.25 }}
+          >
+            {/* Highlight cards */}
+            {HIGHLIGHTS.map((h, i) => (
+              <motion.div
+                key={h.title}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
+                className="glass rounded-xl p-4 border border-gold/[0.06] hover:border-gold/[0.12] transition-colors"
+              >
                 <div className="flex items-start gap-3">
-                  <Waves className="w-4 h-4 text-gold mt-0.5 shrink-0" />
+                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <h.icon className="w-3.5 h-3.5 text-gold/70" />
+                  </div>
                   <div>
-                    <p className="text-sm font-medium text-text-primary">{hotel.spa.name}</p>
-                    <p className="text-xs text-text-secondary mt-0.5">{hotel.spa.description}</p>
-                    <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full text-[10px] tracking-wider uppercase bg-accent-green/10 text-accent-green">
-                      Inklusiv
-                    </span>
+                    <p className="text-xs text-gold/80 font-medium tracking-wide uppercase">
+                      {h.title}
+                    </p>
+                    <p className="text-[12px] text-text-secondary/80 mt-1 leading-relaxed">
+                      {h.text}
+                    </p>
                   </div>
                 </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
 
-                <div className="text-xs text-text-muted">
-                  Buchungsref: <span className="text-text-secondary font-mono">{hotel.bookingRef}</span>
-                </div>
+        {/* Bottom info bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-6 glass-gold rounded-2xl p-5 sm:p-6"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+            <div className="flex items-start gap-2.5">
+              <MapPin className="w-4 h-4 text-gold mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs text-text-primary leading-snug">{hotel.address}</p>
+                <a
+                  href={hotel.googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-gold/70 hover:text-gold transition-colors flex items-center gap-1 mt-1"
+                >
+                  Google Maps <ExternalLink className="w-2.5 h-2.5" />
+                </a>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <Clock className="w-4 h-4 text-gold shrink-0" />
+              <div className="text-xs text-text-primary">
+                <span className="text-gold font-medium">Fr 14:00</span>
+                <span className="text-text-muted mx-1">→</span>
+                <span className="text-gold font-medium">So 12:00</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <Phone className="w-4 h-4 text-gold shrink-0" />
+              <a
+                href={`tel:${hotel.phone}`}
+                className="text-xs text-text-primary hover:text-gold transition-colors"
+              >
+                {hotel.phone}
+              </a>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <Globe className="w-4 h-4 text-gold shrink-0" />
+              <a
+                href={hotel.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-text-primary hover:text-gold transition-colors"
+              >
+                maisonsouquet.com
+              </a>
             </div>
           </div>
         </motion.div>

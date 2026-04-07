@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Rendez-vous à Paris — Murielle & Marcel · 1.–3. Mai 2026";
+export const alt = "Rendez-vous à Paris — M&M's · 1.–3. Mai 2026";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -65,7 +65,7 @@ export default async function Image() {
             display: "flex",
           }}
         >
-          Murielle & Marcel
+          M&M's
         </div>
 
         {/* Divider */}

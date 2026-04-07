@@ -8,11 +8,28 @@ const DAY_COLORS = ["#c9a96e", "#7eb8e0", "#e0a07e"];
 interface DayTabsProps {
   activeDay: number;
   onChange: (index: number) => void;
+  /** Separate layout scope so dock + sticky tabs do not share one motion layout */
+  groupId?: string;
+  /** Compact pill for bottom dock — matches Navigation glass-strong */
+  compact?: boolean;
 }
 
-export default function DayTabs({ activeDay, onChange }: DayTabsProps) {
+export default function DayTabs({
+  activeDay,
+  onChange,
+  groupId = "agenda",
+  compact = false,
+}: DayTabsProps) {
+  const layoutId = `day-tab-bg-${groupId}`;
+
   return (
-    <div className="flex rounded-xl glass p-1 gap-1">
+    <div
+      className={
+        compact
+          ? "flex rounded-full glass-strong glow-gold p-1 gap-0.5 w-full max-w-[min(100%,20rem)]"
+          : "flex rounded-xl glass p-1 gap-1"
+      }
+    >
       {days.map((day, i) => {
         const isActive = activeDay === i;
         const color = DAY_COLORS[i];
@@ -20,13 +37,16 @@ export default function DayTabs({ activeDay, onChange }: DayTabsProps) {
         return (
           <button
             key={day.date}
+            type="button"
             onClick={() => onChange(i)}
-            className="relative flex-1 py-2.5 rounded-lg text-center transition-colors duration-200"
+            className={`relative flex-1 text-center transition-colors duration-200 ${
+              compact ? "py-1.5 rounded-full" : "py-2.5 rounded-lg"
+            }`}
           >
             {isActive && (
               <motion.div
-                layoutId="day-tab-bg"
-                className="absolute inset-0 rounded-lg"
+                layoutId={layoutId}
+                className={`absolute inset-0 ${compact ? "rounded-full" : "rounded-lg"}`}
                 style={{
                   background: `linear-gradient(135deg, ${color}12, ${color}08)`,
                   border: `1px solid ${color}25`,
@@ -37,16 +57,16 @@ export default function DayTabs({ activeDay, onChange }: DayTabsProps) {
             )}
             <span className="relative flex flex-col items-center gap-0.5">
               <span
-                className="text-[10px] font-semibold uppercase tracking-[0.15em]"
+                className={`font-semibold uppercase tracking-[0.15em] ${
+                  compact ? "text-[9px]" : "text-[10px]"
+                }`}
                 style={{ color: isActive ? color : undefined }}
               >
-                {isActive ? undefined : (
-                  <span className="text-text-muted">{day.label}</span>
-                )}
+                {isActive ? undefined : <span className="text-text-muted">{day.label}</span>}
                 {isActive && day.label}
               </span>
               <span
-                className="text-[11px] tabular-nums"
+                className={`tabular-nums ${compact ? "text-[10px]" : "text-[11px]"}`}
                 style={{ color: isActive ? `${color}bb` : undefined }}
               >
                 {isActive ? (

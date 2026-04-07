@@ -133,8 +133,18 @@ function TicketCard({ id, ticket }: { id: string; ticket: (typeof tickets)[strin
 
 export default function TicketVault() {
   return (
-    <section id="tickets" className="relative py-20 px-4 sm:px-6">
-      <div className="max-w-2xl mx-auto">
+    <section id="tickets" className="relative py-16 sm:py-24 px-4 sm:px-6 overflow-hidden" style={{ backgroundColor: "#0e0c15" }}>
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-[0.07] mix-blend-luminosity pointer-events-none"
+        style={{ backgroundImage: "url(/images/events/souquet-1001-nuits.jpg)" }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0e0c15] via-transparent to-[#0e0c15] pointer-events-none" />
+      <div className="absolute inset-0 texture-noise pointer-events-none" />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 50% 90%, rgba(201,169,110,0.10) 0%, rgba(201,169,110,0.02) 50%, transparent 80%)" }}
+      />
+      <div className="max-w-2xl mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -145,10 +155,12 @@ export default function TicketVault() {
           <p className="text-text-secondary text-xs tracking-[0.25em] uppercase mb-3">
             Alle Reservierungen
           </p>
-          <h2 className="text-3xl sm:text-4xl font-light tracking-tight">
-            <span className="text-gradient-gold">Ticket Wallet</span>
+          <h2 className="text-3xl sm:text-5xl font-light tracking-tight">
+            <span className="text-gradient-gold">Les Réservations</span>
           </h2>
-          <p className="text-text-muted text-xs mt-3">{Object.keys(tickets).length} Buchungen bestätigt</p>
+          <p className="text-text-secondary text-sm sm:text-base font-light mt-3 tracking-wide">
+            {Object.keys(tickets).length} Buchungen bestätigt
+          </p>
         </motion.div>
 
         <div className="space-y-3">
