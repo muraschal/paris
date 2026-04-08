@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Coffee, Hotel, Waves, Wine, UtensilsCrossed, Sunset,
@@ -120,8 +120,24 @@ interface TimelineEventProps {
   onHoverEvent?: (locationId: string | null, eventKey: string | null) => void;
 }
 
+/** Threshold: viewports taller than this get fun facts inline (no collapse). */
+const TALL_VIEWPORT_PX = 900;
+
+function useTallViewport() {
+  const [isTall, setIsTall] = useState(false);
+  useEffect(() => {
+    const check = () => setIsTall(window.innerHeight >= TALL_VIEWPORT_PX);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isTall;
+}
+
 export default function TimelineEventCard({ event, eventKey, isLast, dayColor, hoveredEventKey, hoveredLocationId, hoveredSegment, onHoverEvent }: TimelineEventProps) {
   const [showTicket, setShowTicket] = useState(false);
+  const [factOpen, setFactOpen] = useState(false);
+  const isTallScreen = useTallViewport();
   const Icon = iconMap[event.icon] || Star;
   const location = event.locationId ? getLocation(event.locationId) : null;
   const ticket: TicketInfo | undefined = event.ticketRef ? tickets[event.ticketRef] : undefined;
@@ -318,9 +334,39 @@ export default function TimelineEventCard({ event, eventKey, isLast, dayColor, h
           )}
 
           {event.funFact && (
-            <p className="text-[11px] mt-2.5 leading-relaxed tracking-wide" style={{ color: "rgba(240, 236, 228, 0.7)" }}>
-              {event.funFact}
-            </p>
+            isTallScreen ? (
+              /* Large viewport: always visible */
+              <p className="text-[11px] mt-2.5 leading-relaxed tracking-wide" style={{ color: "rgba(240, 236, 228, 0.7)" }}>
+                {event.funFact}
+              </p>
+            ) : (
+              /* Compact viewport: collapsible */
+              <div className="mt-2">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setFactOpen(!factOpen); }}
+                  className="flex items-center gap-1.5 text-[10px] text-text-muted hover:text-gold/80 transition-colors"
+                >
+                  <span className="text-gold/60">{factOpen ? "▾" : "▸"}</span>
+                  <span className="uppercase tracking-[0.1em] font-medium">Fun Fact</span>
+                </button>
+                <AnimatePresence initial={false}>
+                  {factOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <p className="text-[11px] mt-1.5 leading-relaxed tracking-wide" style={{ color: "rgba(240, 236, 228, 0.7)" }}>
+                        {event.funFact}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )
           )}
         </div>
       </div>
