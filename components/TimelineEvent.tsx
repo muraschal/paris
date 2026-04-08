@@ -121,7 +121,7 @@ interface TimelineEventProps {
 }
 
 /** Threshold: viewports taller than this get fun facts inline (no collapse). */
-const TALL_VIEWPORT_PX = 900;
+const TALL_VIEWPORT_PX = 1100;
 
 function useTallViewport() {
   const [isTall, setIsTall] = useState(false);
