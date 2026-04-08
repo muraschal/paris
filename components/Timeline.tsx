@@ -20,6 +20,7 @@ import {
 import { days, getLocation, getUniqueVisitedPoisInOrder, ALL_DAY_INDEX } from "@/data/trip";
 import type { TripEvent, Location } from "@/data/trip";
 import walkingRoutes from "@/data/walking-routes.json";
+import { STAGE_PALETTES } from "@/lib/constants";
 import DayTabs from "./DayTabs";
 import TimelineEvent from "./TimelineEvent";
 
@@ -47,12 +48,6 @@ const POI_CATEGORY_LABEL: Record<Location["category"], string> = {
   shopping: "Shopping",
   transport: "Transport",
 };
-
-const STAGE_PALETTES: string[][] = [
-  ["#FFD700", "#FF8C00", "#22D3EE", "#FF6B6B", "#4ADE80"],
-  ["#38BDF8", "#FACC15", "#F472B6", "#34D399", "#C084FC"],
-  ["#FB7185", "#2DD4BF", "#FCD34D", "#A78BFA", "#38BDF8"],
-];
 
 /** Sonntag: Fußweg Pont des Arts → Louvre (eigene Akzentfarbe) */
 const PONT_TO_LOUVRE_WALK_COLOR = "#f97316";

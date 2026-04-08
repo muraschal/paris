@@ -6,35 +6,46 @@ import {
   Coffee, Hotel, Waves, Wine, UtensilsCrossed, Sunset,
   Sparkles, Star, Moon, Car, Landmark, Camera, Music,
   Heart, MapIcon, IceCreamCone, Plane, Luggage,
-  ExternalLink, Copy, Check, GlassWater, TrainFront,
+  ExternalLink, GlassWater, TrainFront,
   Ticket, X, Footprints,
 } from "lucide-react";
 import type { TripEvent, TicketInfo } from "@/data/trip";
 import { getLocation, tickets } from "@/data/trip";
+import CopyButton from "./CopyButton";
+import { HOVER_COLOR } from "@/lib/constants";
 
-const EVENT_IMAGES: Record<string, string> = {
-  "Check-in Maison Souquet": "/images/events/souquet-1001-nuits.jpg",
+/** Maps event locationId → background image. Falls back to title for disambiguation. */
+const EVENT_IMAGE_BY_LOCATION: Record<string, string> = {
+  "maison-souquet": "/images/events/souquet-1001-nuits.jpg",
+  "rencontre": "/images/events/rencontre-dinner.jpg",
+  "sacre-coeur": "/images/events/sacre-coeur.jpg",
+  "moulin-rouge": "/images/events/moulin-rouge.jpg",
+  "eiffelturm": "/images/events/tour-eiffel-champagne.jpg",
+  "trocadero": "/images/events/trocadero.jpg",
+  "fouquets": "/images/events/fouquets.jpg",
+  "arc-de-triomphe": "/images/events/arc-de-triomphe.jpg",
+  "buddha-bar": "/images/events/buddha-bar.jpg",
+  "laduree": "/images/events/laduree.jpg",
+  "berthillon": "/images/events/berthillon.jpg",
+  "notre-dame": "/images/events/notre-dame.jpg",
+  "quais-de-seine": "/images/events/quais-de-seine.jpg",
+  "pont-des-arts": "/images/events/pont-des-arts.jpg",
+  "louvre": "/images/events/louvre.jpg",
+};
+
+/** Title-level overrides when one location has multiple events with different images. */
+const EVENT_IMAGE_BY_TITLE: Record<string, string> = {
   "Salon d'Eau — Pool & Hammam": "/images/events/souquet-salon-deau.jpg",
   "Cocktails — Salon des petits bonheurs": "/images/events/souquet-petits-bonheurs.jpg",
-  "Dinner — Rencontre": "/images/events/rencontre-dinner.jpg",
-  "Sacré-Cœur — Blaue Stunde": "/images/events/sacre-coeur.jpg",
   "Hotel — Frisch machen": "/images/events/souquet-suite.jpg",
-  "Moulin Rouge — Féerie Show": "/images/events/moulin-rouge.jpg",
   "Frühstück im Hotel": "/images/events/fruehstueck-hotel.jpg",
-  "Tour Eiffel — 2nd Floor + Champagne": "/images/events/tour-eiffel-champagne.jpg",
-  "Trocadéro — Fotostop": "/images/events/trocadero.jpg",
-  "Café Fouquet's": "/images/events/fouquets.jpg",
-  "Arc de Triomphe": "/images/events/arc-de-triomphe.jpg",
   "Quality Time im Zimmer": "/images/events/souquet-suite.jpg",
-  "Buddha Bar — Dinner & DJ": "/images/events/buddha-bar.jpg",
   "Frühstück im Zimmer": "/images/events/fruehstueck-zimmer.jpg",
-  "Brunch — Ladurée Paris Royale": "/images/events/laduree.jpg",
-  "Berthillon — Eis": "/images/events/berthillon.jpg",
-  "Notre-Dame": "/images/events/notre-dame.jpg",
-  "Quais de Seine — Spaziergang": "/images/events/quais-de-seine.jpg",
-  "Pont des Arts": "/images/events/pont-des-arts.jpg",
-  "Louvre Pyramide — Fotostop": "/images/events/louvre.jpg",
 };
+
+function getEventImage(event: TripEvent): string | undefined {
+  return EVENT_IMAGE_BY_TITLE[event.title] ?? (event.locationId ? EVENT_IMAGE_BY_LOCATION[event.locationId] : undefined);
+}
 
 const iconMap: Record<string, React.ElementType> = {
   coffee: Coffee,
@@ -60,30 +71,6 @@ const iconMap: Record<string, React.ElementType> = {
   footprints: Footprints,
 };
 
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const copy = async () => {
-    await navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <button
-      onClick={copy}
-      className="ml-2 p-1 rounded hover:bg-glass-hover transition-colors"
-      aria-label="Kopieren"
-    >
-      {copied ? (
-        <Check className="w-3 h-3 text-accent-green" />
-      ) : (
-        <Copy className="w-3 h-3 text-text-muted" />
-      )}
-    </button>
-  );
-}
-
 function TicketPopover({ ticket, onClose }: { ticket: TicketInfo; onClose: () => void }) {
   return (
     <motion.div
@@ -104,7 +91,7 @@ function TicketPopover({ ticket, onClose }: { ticket: TicketInfo; onClose: () =>
             <span className="text-[10px] text-text-muted">{ref.label}</span>
             <span className="flex items-center font-mono text-[10px] text-text-secondary">
               {ref.value.length > 12 ? `${ref.value.slice(0, 6)}…${ref.value.slice(-4)}` : ref.value}
-              <CopyButton value={ref.value} />
+              <CopyButton value={ref.value} variant="inline" />
             </span>
           </div>
         ))}
@@ -191,12 +178,12 @@ export default function TimelineEventCard({ event, eventKey, isLast, dayColor, h
                   : "glass"
           }`}
           style={isHovered ? {
-            background: "rgba(255,45,120,0.18)",
-            boxShadow: "0 0 20px rgba(255,45,120,0.4), 0 0 6px rgba(255,45,120,0.25), inset 0 0 8px rgba(255,45,120,0.1)",
-            border: "2px solid #FF2D78",
+            background: `${HOVER_COLOR}2d`,
+            boxShadow: `0 0 20px ${HOVER_COLOR}66, 0 0 6px ${HOVER_COLOR}40, inset 0 0 8px ${HOVER_COLOR}1a`,
+            border: `2px solid ${HOVER_COLOR}`,
           } : undefined}
         >
-          <Icon className={`w-4 h-4 transition-colors duration-200 ${isHovered ? "text-[#FF2D78]" : event.highlight || isBooked ? "text-gold" : "text-text-secondary"}`} />
+          <Icon className={`w-4 h-4 transition-colors duration-200 ${isHovered ? `text-[${HOVER_COLOR}]` : event.highlight || isBooked ? "text-gold" : "text-text-secondary"}`} />
         </div>
         {!isLast && (
           <div className="w-px flex-1 min-h-[28px] bg-gradient-to-b from-glass-border to-transparent mt-2" />
@@ -206,13 +193,22 @@ export default function TimelineEventCard({ event, eventKey, isLast, dayColor, h
       {/* Content */}
       <div className="flex-1 pb-7 sm:pb-8 min-w-0 relative">
         {/* Unified card background */}
-        <div className={`absolute -top-1.5 -left-2.5 -right-2.5 bottom-2 rounded-xl overflow-hidden pointer-events-none border transition-all duration-200 ${
-          isHovered
-            ? "border-[#FF2D78]/25 shadow-[0_0_24px_rgba(255,45,120,0.15)]"
-            : isBooked ? "border-gold/[0.12]" : "border-white/[0.06]"
-        }`}>
-          <div className={`absolute inset-0 transition-colors duration-200 ${isHovered ? "bg-[#FF2D78]/[0.06]" : isBooked ? "bg-gold/[0.03]" : "bg-white/[0.015]"}`} />
-          {EVENT_IMAGES[event.title] && (
+        <div className={`absolute -top-1.5 -left-2.5 -right-2.5 bottom-2 rounded-xl overflow-hidden pointer-events-none border transition-all duration-200`} style={isHovered ? {
+          borderColor: `${HOVER_COLOR}40`,
+          boxShadow: `0 0 24px ${HOVER_COLOR}26`,
+        } : isBooked ? {
+          borderColor: "rgb(212, 175, 55, 0.12)",
+        } : {
+          borderColor: "rgb(255, 255, 255, 0.06)",
+        }}>
+          <div className="absolute inset-0 transition-colors duration-200" style={isHovered ? {
+            backgroundColor: `${HOVER_COLOR}0f`,
+          } : isBooked ? {
+            backgroundColor: "rgb(212, 175, 55, 0.03)",
+          } : {
+            backgroundColor: "rgb(255, 255, 255, 0.015)",
+          }} />
+          {getEventImage(event) && (
             <div
               className="absolute top-0 bottom-0 right-0 w-[30%]"
               style={{
@@ -222,7 +218,7 @@ export default function TimelineEventCard({ event, eventKey, isLast, dayColor, h
             >
               <div
                 className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${EVENT_IMAGES[event.title]})` }}
+                style={{ backgroundImage: `url(${getEventImage(event)})` }}
               />
               <div className={`absolute inset-0 ${isBooked ? "bg-gold/[0.04]" : "bg-navy/30"}`} />
             </div>

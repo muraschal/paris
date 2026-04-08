@@ -2,8 +2,7 @@
 
 import { motion } from "framer-motion";
 import { days, ALL_DAY_INDEX } from "@/data/trip";
-
-const DAY_COLORS = ["#c9a96e", "#7eb8e0", "#e0a07e", "#a89fbf"];
+import { DAY_COLORS } from "@/lib/constants";
 
 interface DayTabsProps {
   activeDay: number;

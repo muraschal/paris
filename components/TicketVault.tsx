@@ -2,13 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Copy, Check, Ticket, AlertTriangle, Clock, CheckCircle2, Wallet } from "lucide-react";
+import { ChevronDown, Ticket, AlertTriangle, Clock, CheckCircle2, Wallet } from "lucide-react";
 import { tickets } from "@/data/trip";
+import CopyButton from "./CopyButton";
+import { DAY_COLORS as DAY_COLOR_VALUES } from "@/lib/constants";
 
 const DAY_COLORS: Record<string, string> = {
-  Freitag: "#c9a96e",
-  Samstag: "#7eb8e0",
-  Sonntag: "#e0a07e",
+  Freitag: DAY_COLOR_VALUES[0],
+  Samstag: DAY_COLOR_VALUES[1],
+  Sonntag: DAY_COLOR_VALUES[2],
 };
 
 /** Deterministic fake barcode bar widths for Wallet-style strip */
@@ -43,34 +45,6 @@ function PassBarcode({ seed }: { seed: string }) {
         />
       ))}
     </div>
-  );
-}
-
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const copy = async () => {
-    await navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        void copy();
-      }}
-      className="shrink-0 p-2 rounded-full bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.12] transition-colors"
-      aria-label="Kopieren"
-    >
-      {copied ? (
-        <Check className="w-3.5 h-3.5 text-accent-green" />
-      ) : (
-        <Copy className="w-3.5 h-3.5 text-text-muted hover:text-gold transition-colors" />
-      )}
-    </button>
   );
 }
 

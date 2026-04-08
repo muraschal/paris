@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -18,34 +19,13 @@ import {
 import { hotel } from "@/data/trip";
 
 const HOTEL_IMAGES = [
-  {
-    url: "https://www.maisonsouquet.com/wp-content/uploads/2024/02/MS-Salon-des-Petits-Bonheurs-2b.jpg",
-    caption: "Salon des Petits Bonheurs",
-  },
-  {
-    url: "https://www.maisonsouquet.com/wp-content/uploads/2024/02/MS-Salon-1001-nuits_2-1536x1024.jpg",
-    caption: "Salon des 1001 Nuits",
-  },
-  {
-    url: "https://www.maisonsouquet.com/wp-content/uploads/2024/01/home_de_luxe-1536x1023.jpg",
-    caption: "Chambre De Luxe",
-  },
-  {
-    url: "https://www.maisonsouquet.com/wp-content/uploads/2023/12/spa-1536x1024.jpg",
-    caption: "Salon d'Eau — Pool & Hammam",
-  },
-  {
-    url: "https://www.maisonsouquet.com/wp-content/uploads/2024/01/maison_souquet21-1536x1023.jpg",
-    caption: "Entrée & Salon",
-  },
-  {
-    url: "https://www.maisonsouquet.com/wp-content/uploads/2024/01/Maison-souquet-09-01-2024-1536x1023.jpeg",
-    caption: "Salon Privé",
-  },
-  {
-    url: "https://www.maisonsouquet.com/wp-content/uploads/2024/01/maison_souquet19-1536x1023.jpg",
-    caption: "Suite",
-  },
+  { url: "/images/events/souquet-petits-bonheurs-2b.jpg", caption: "Salon des Petits Bonheurs", width: 1536, height: 1024 },
+  { url: "/images/events/souquet-1001-nuits-2.jpg", caption: "Salon des 1001 Nuits", width: 1536, height: 1024 },
+  { url: "/images/events/souquet-home-luxe.jpg", caption: "Chambre De Luxe", width: 1536, height: 1023 },
+  { url: "/images/events/souquet-spa.jpg", caption: "Salon d'Eau — Pool & Hammam", width: 1536, height: 1024 },
+  { url: "/images/events/souquet-21.jpg", caption: "Entrée & Salon", width: 1536, height: 1023 },
+  { url: "/images/events/souquet-09.jpg", caption: "Salon Privé", width: 1536, height: 1023 },
+  { url: "/images/events/souquet-19.jpg", caption: "Suite", width: 1536, height: 1023 },
 ];
 
 const HIGHLIGHTS = [
@@ -140,16 +120,23 @@ export default function HotelCard() {
             {/* touch-pan-y: vertikales Seiten-Scrollen auf Mobilgeräten nicht mit Bild-Transform verklemmen */}
             <div className="relative aspect-[4/3] sm:aspect-[16/10] overflow-hidden touch-pan-y isolate">
               <AnimatePresence mode="wait">
-                <motion.img
+                <motion.div
                   key={current}
-                  src={HOTEL_IMAGES[current].url}
-                  alt={HOTEL_IMAGES[current].caption}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.45 }}
-                />
+                >
+                  <Image
+                    src={HOTEL_IMAGES[current].url}
+                    alt={HOTEL_IMAGES[current].caption}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    className="object-cover"
+                    quality={80}
+                  />
+                </motion.div>
               </AnimatePresence>
 
               <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/30 to-transparent" />

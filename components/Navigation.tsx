@@ -47,16 +47,20 @@ export default function Navigation() {
     <AnimatePresence>
       {showNav && (
         <motion.nav
+          aria-label="Sektions-Navigation"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           className="fixed bottom-6 inset-x-4 z-50 flex justify-center pointer-events-none sm:inset-x-6"
         >
-          <div className="glass-strong glow-gold rounded-full px-2 py-2 flex items-center gap-1 max-w-full pointer-events-auto">
+          <div className="glass-strong glow-gold rounded-full px-2 py-2 flex items-center gap-1 max-w-full pointer-events-auto" role="tablist">
             {sections.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 type="button"
+                role="tab"
+                aria-selected={active === id}
+                aria-label={label}
                 onClick={() => scrollTo(id)}
                 className={`
                   relative flex items-center gap-1.5 px-3 py-2 rounded-full text-xs transition-all duration-300

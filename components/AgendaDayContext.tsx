@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useMemo, type ReactNode } from "react";
 
 export type AgendaDayContextValue = {
   activeDay: number;
@@ -11,8 +11,9 @@ const AgendaDayContext = createContext<AgendaDayContextValue | null>(null);
 
 export function AgendaDayProvider({ children }: { children: ReactNode }) {
   const [activeDay, setActiveDay] = useState(0);
+  const value = useMemo(() => ({ activeDay, setActiveDay }), [activeDay]);
   return (
-    <AgendaDayContext.Provider value={{ activeDay, setActiveDay }}>
+    <AgendaDayContext.Provider value={value}>
       {children}
     </AgendaDayContext.Provider>
   );

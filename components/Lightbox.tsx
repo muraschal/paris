@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -31,9 +32,13 @@ export default function Lightbox({
     onNavigate((index + 1) % total);
   }, [index, total, onNavigate]);
 
+  const overlayRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    // Focus the overlay so keyboard events work immediately
+    overlayRef.current?.focus();
     return () => {
       document.body.style.overflow = prev;
     };
@@ -63,7 +68,12 @@ export default function Lightbox({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.25 }}
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-xl"
+        ref={overlayRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={spotName ? `Foto: ${spotName}` : "Foto-Ansicht"}
+        tabIndex={-1}
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-xl outline-none"
         onClick={onClose}
       >
         {/* Close button */}
@@ -114,11 +124,16 @@ export default function Lightbox({
           className="relative max-w-[92vw] max-h-[80vh] cursor-grab active:cursor-grabbing"
           onClick={(e) => e.stopPropagation()}
         >
-          <img
+          <Image
             src={images[index]}
             alt={spotName || "Photo"}
+            width={1200}
+            height={800}
             className="max-w-full max-h-[80vh] rounded-lg object-contain select-none"
             draggable={false}
+            sizes="92vw"
+            quality={85}
+            unoptimized={false}
           />
         </motion.div>
 

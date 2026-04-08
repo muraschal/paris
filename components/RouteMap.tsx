@@ -21,6 +21,7 @@ import type { Location } from "@/data/trip";
 import walkingRoutes from "@/data/walking-routes.json";
 import metroRoutes from "@/data/metro-routes.json";
 import uberRoutes from "@/data/uber-routes.json";
+import { DAY_COLORS, DAY_KEYS, DAY_LABELS, DAY_LABELS_DE, STAGE_PALETTES, HOVER_COLOR, ALL_MAP_ACCENT } from "@/lib/constants";
 
 const MAP_STYLES = {
   dark: {
@@ -38,23 +39,6 @@ const MAP_STYLES = {
 } as const;
 
 type MapStyle = keyof typeof MAP_STYLES;
-
-const DAY_COLORS = ["#c9a96e", "#7eb8e0", "#e0a07e", "#a89fbf"];
-const HOVER_COLOR = "#FF2D78";
-const DAY_KEY_MAP = ["friday", "saturday", "sunday"];
-
-const STAGE_PALETTES: string[][] = [
-  // Friday: alternating warm/cool so neighbors always contrast
-  ["#FFD700", "#FF8C00", "#22D3EE", "#FF6B6B", "#4ADE80"],
-  // Saturday: same principle
-  ["#38BDF8", "#FACC15", "#F472B6", "#34D399", "#C084FC"],
-  // Sunday: same principle
-  ["#FB7185", "#2DD4BF", "#FCD34D", "#A78BFA", "#38BDF8"],
-];
-const DAY_LABELS = ["Vendredi", "Samedi", "Dimanche", "ALL"];
-/** Deutsche Beschriftung der Tages-Zonen in der ALL-Kartenansicht */
-const DAY_BOUNDS_LABELS_DE = ["Freitag", "Samstag", "Sonntag"] as const;
-const ALL_MAP_ACCENT = "#c9a96e";
 
 const CATEGORY_SVGS: Record<string, string> = {
   hotel: `<svg viewBox="0 0 24 24" fill="none" stroke="CCC" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M3 7v14M21 7v14M6 11h4v4H6zM14 11h4v4h-4zM9 3h6l3 4H6l3-4z"/></svg>`,
@@ -507,7 +491,7 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
               const palette =
                 activeDay !== null && activeDay !== ALL_DAY_INDEX ? STAGE_PALETTES[activeDay] : STAGE_PALETTES[0];
               const dayKeyForRoutes =
-                activeDay !== null && activeDay !== ALL_DAY_INDEX ? DAY_KEY_MAP[activeDay] : null;
+                activeDay !== null && activeDay !== ALL_DAY_INDEX ? DAY_KEYS[activeDay] : null;
               let walkColorIdx = 0;
 
               const segColors: { stageColor: string; exitWalkColor: string | null }[] = segments.map((seg) => {
@@ -553,7 +537,7 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
               const exitWalkStageColor = segColors[i].exitWalkColor;
 
               const dayKey =
-                activeDay !== null && activeDay !== ALL_DAY_INDEX ? DAY_KEY_MAP[activeDay] : null;
+                activeDay !== null && activeDay !== ALL_DAY_INDEX ? DAY_KEYS[activeDay] : null;
 
               const isSat = mapStyle === "satellite";
 
@@ -781,7 +765,7 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
                 if (!b) return null;
                 const pos = getDayBoundsLabelPosition(b, d);
                 const accent = DAY_COLORS[d];
-                const label = DAY_BOUNDS_LABELS_DE[d];
+                const label = DAY_LABELS_DE[d];
                 return (
                   <Marker
                     key={`all-day-bounds-label-${d}`}

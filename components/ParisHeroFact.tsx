@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PARIS_FACTS, PARIS_FACTS_COUNT } from "@/data/paris-facts";
+import { PARIS_FACTS_COUNT } from "@/data/paris-facts";
 
-const LEN = PARIS_FACTS.length;
 const ROTATE_MS = 14_000;
 
 function randInt(max: number) {
@@ -20,14 +19,14 @@ function randRange(min: number, max: number) {
   return min + Math.random() * (max - min);
 }
 
-function nextIndex(prev: number) {
-  if (LEN <= 1) return 0;
+function nextIndex(prev: number, len: number) {
+  if (len <= 1) return 0;
   let n = prev;
   let guard = 0;
   while (n === prev && guard++ < 12) {
-    n = randInt(LEN);
+    n = randInt(len);
   }
-  if (n === prev) n = (prev + 1 + randInt(LEN - 1)) % LEN;
+  if (n === prev) n = (prev + 1 + randInt(len - 1)) % len;
   return n;
 }
 
@@ -81,14 +80,27 @@ function WordReveal({ text, contentKey }: { text: string; contentKey: number }) 
 }
 
 export default function ParisHeroFact() {
+  const [facts, setFacts] = useState<string[]>([]);
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
+    fetch("/data/paris-facts.json")
+      .then((res) => res.json())
+      .then((data) => setFacts(data))
+      .catch((err) => console.error("Failed to load paris facts:", err));
+  }, []);
+
+  useEffect(() => {
+    if (facts.length === 0) return;
     const id = window.setInterval(() => {
-      setIdx((prev) => nextIndex(prev));
+      setIdx((prev) => nextIndex(prev, facts.length));
     }, ROTATE_MS);
     return () => window.clearInterval(id);
-  }, []);
+  }, [facts.length]);
+
+  if (facts.length === 0) {
+    return null;
+  }
 
   return (
     <div
@@ -107,7 +119,7 @@ export default function ParisHeroFact() {
           transition={{ duration: 0.35 }}
           className="w-full"
         >
-          <WordReveal text={PARIS_FACTS[idx]!} contentKey={idx} />
+          <WordReveal text={facts[idx]!} contentKey={idx} />
         </motion.div>
       </AnimatePresence>
     </div>

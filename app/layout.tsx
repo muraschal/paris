@@ -48,8 +48,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="de" className={`${inter.variable} antialiased`} suppressHydrationWarning>
-      <body className="min-h-[100svh] bg-navy" suppressHydrationWarning>{children}</body>
+    <html lang="de" className={`${inter.variable} antialiased`}>
+      <body className="min-h-[100svh] bg-navy">{children}</body>
     </html>
   );
 }

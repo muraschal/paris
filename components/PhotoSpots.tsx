@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Camera, ExternalLink } from "lucide-react";
 import { locations } from "@/data/trip";
@@ -74,11 +75,13 @@ export default function PhotoSpots() {
                     onClick={() => openLightbox(spotIdx, 0)}
                     className="relative w-full aspect-[16/9] overflow-hidden cursor-pointer"
                   >
-                    <img
+                    <Image
                       src={spot.photoGallery[0]}
-                      alt={spot.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
+                      alt={`${spot.name} — Hauptansicht`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      quality={75}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     <div className="absolute bottom-3 left-3 flex items-center gap-2">
@@ -119,11 +122,13 @@ export default function PhotoSpots() {
                               : "ring-1 ring-white/10 hover:ring-white/30"
                           }`}
                         >
-                          <img
+                          <Image
                             src={img}
-                            alt={`${spot.name} ${imgIdx + 1}`}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
+                            alt={`${spot.name} — Foto ${imgIdx + 1}`}
+                            fill
+                            sizes="(max-width: 768px) 50vw, 15vw"
+                            className="object-cover transition-transform duration-300 group-hover/thumb:scale-105"
+                            quality={70}
                           />
                         </button>
                       ))}
