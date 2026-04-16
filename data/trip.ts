@@ -716,6 +716,8 @@ export const budgetPaid: BudgetItem[] = [
   { label: "Maison Souquet (2 Nächte)", amount: 890, icon: "hotel" },
   { label: "Moulin Rouge (2× Show + Champagne)", amount: 270, icon: "star" },
   { label: "Tour Eiffel (2× + Champagne)", amount: 89, icon: "landmark" },
+  { label: "Flug Berlin → Paris (Air France) · 503,74 CHF", amount: 539, icon: "plane" },
+  { label: "Flug Zürich → Paris (Booking.com) · 537 CHF", amount: 575, icon: "plane" },
 ];
 
 export const budgetOnSite: BudgetItem[] = [
