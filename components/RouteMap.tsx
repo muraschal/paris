@@ -440,7 +440,7 @@ export default function RouteMap({ activeDay: externalDay, onDayChange, compact,
       )}
 
       {/* Map */}
-      <div className={compact ? "h-full" : "px-3 sm:px-4 lg:px-6"}>
+      <div className={compact ? "h-full" : "px-3 sm:px-4 lg:px-6"} data-lenis-prevent>
         <motion.div
           className={`relative overflow-hidden ${compact ? "h-full" : "h-[55vh] sm:h-[65vh] lg:h-[75vh] rounded-2xl glass glow-gold"}`}
           initial={compact ? { opacity: 1 } : { opacity: 0, y: 30 }}

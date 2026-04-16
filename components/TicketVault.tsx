@@ -235,7 +235,7 @@ export default function TicketVault() {
   return (
     <section
       id="tickets"
-      className="relative py-16 sm:py-24 md:min-h-dvh md:flex md:flex-col md:justify-center overflow-x-hidden lg:snap-start scroll-mt-0"
+      className="relative py-16 sm:py-24 md:min-h-dvh md:flex md:flex-col md:justify-center overflow-x-hidden"
       style={{ backgroundColor: "#0e0c15" }}
     >
       <div

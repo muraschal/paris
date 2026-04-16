@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Hotel, Map, Camera, Ticket, Wallet } from "lucide-react";
+import { useLenis } from "lenis/react";
 
 const sections = [
   { id: "hotel", label: "Hotel", icon: Hotel },
@@ -12,34 +13,38 @@ const sections = [
   { id: "budget", label: "Budget", icon: Wallet },
 ];
 
+const LUXURY_EASING = (t: number) => 1 - Math.pow(1 - t, 4);
+
 export default function Navigation() {
   const [visible, setVisible] = useState(false);
   const [active, setActive] = useState("");
+  const lenis = useLenis();
 
-  useEffect(() => {
-    const onScroll = () => {
-      setVisible(window.scrollY > window.innerHeight * 0.5);
+  useLenis((l) => {
+    setVisible(l.scroll > window.innerHeight * 0.5);
 
-      for (const section of [...sections].reverse()) {
-        const el = document.getElementById(section.id);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= window.innerHeight * 0.4) {
-            setActive(section.id);
-            break;
-          }
+    for (const section of [...sections].reverse()) {
+      const el = document.getElementById(section.id);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= window.innerHeight * 0.4) {
+          setActive(section.id);
+          break;
         }
       }
-    };
+    }
+  });
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollTo = useCallback(
+    (id: string) => {
+      if (lenis) {
+        lenis.scrollTo(`#${id}`, { duration: 1.4, easing: LUXURY_EASING });
+      } else {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      }
+    },
+    [lenis],
+  );
 
   const showNav = visible;
 

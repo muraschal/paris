@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import "lenis/dist/lenis.css";
 import "./globals.css";
+import SmoothScroll from "@/components/SmoothScroll";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -49,7 +51,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de" className={`${inter.variable} antialiased`}>
-      <body className="min-h-[100svh] bg-navy">{children}</body>
+      <body className="min-h-[100svh] bg-navy">
+        <SmoothScroll>{children}</SmoothScroll>
+      </body>
     </html>
   );
 }

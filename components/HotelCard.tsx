@@ -73,7 +73,7 @@ export default function HotelCard() {
   return (
     <section
       id="hotel"
-      className="relative min-h-dvh flex flex-col justify-center py-16 sm:py-24 px-4 sm:px-6 lg:snap-start scroll-mt-0"
+      className="relative min-h-dvh flex flex-col justify-center py-16 sm:py-24 px-4 sm:px-6"
       style={{ backgroundColor: "#0c0b16" }}
     >
       <div className="absolute inset-0 texture-noise pointer-events-none" />

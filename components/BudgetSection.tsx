@@ -90,7 +90,7 @@ export default function BudgetSection() {
   return (
     <section
       id="budget"
-      className="relative min-h-dvh flex flex-col justify-center py-16 sm:py-24 px-4 sm:px-6 overflow-hidden lg:snap-start scroll-mt-0"
+      className="relative min-h-dvh flex flex-col justify-center py-16 sm:py-24 px-4 sm:px-6 overflow-hidden"
       style={{ backgroundColor: "#05050e" }}
     >
       <div
