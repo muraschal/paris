@@ -52,10 +52,19 @@ export interface TripDay {
   totalCost: number;
 }
 
+/** Optionale Flug-Strecke für IATA-Darstellung im Budget (z. B. ZRH → CDG). */
+export type BudgetFlightRoute = {
+  origin: { iata: string; city: string };
+  destination: { iata: string; city: string };
+  /** z. B. Airline oder Buchungskanal */
+  vendor: string;
+};
+
 export interface BudgetItem {
   label: string;
   amount: number;
   icon: string;
+  flightRoute?: BudgetFlightRoute;
 }
 
 export const locations: Location[] = [
@@ -716,8 +725,26 @@ export const budgetPaid: BudgetItem[] = [
   { label: "Maison Souquet (2 Nächte)", amount: 890, icon: "hotel" },
   { label: "Moulin Rouge (2× Show + Champagne)", amount: 270, icon: "star" },
   { label: "Tour Eiffel (2× + Champagne)", amount: 89, icon: "landmark" },
-  { label: "Flug Berlin → Paris (Air France) · 503,74 CHF", amount: 539, icon: "plane" },
-  { label: "Flug Zürich → Paris (Booking.com) · 537 CHF", amount: 575, icon: "plane" },
+  {
+    label: "Flug BER → CDG (Air France)",
+    amount: 539,
+    icon: "plane",
+    flightRoute: {
+      origin: { iata: "BER", city: "Berlin" },
+      destination: { iata: "CDG", city: "Paris" },
+      vendor: "Air France",
+    },
+  },
+  {
+    label: "Flug ZRH → CDG (Booking.com)",
+    amount: 575,
+    icon: "plane",
+    flightRoute: {
+      origin: { iata: "ZRH", city: "Zürich" },
+      destination: { iata: "CDG", city: "Paris" },
+      vendor: "Booking.com",
+    },
+  },
 ];
 
 export const budgetOnSite: BudgetItem[] = [

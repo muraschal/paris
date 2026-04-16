@@ -2,15 +2,94 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, CheckCircle2, Clock } from "lucide-react";
-import { budgetPaid, budgetOnSite, totalPaid, totalOnSite, totalBudget, days } from "@/data/trip";
+import { ArrowRight, ChevronDown, CheckCircle2, Clock } from "lucide-react";
+import {
+  budgetPaid,
+  budgetOnSite,
+  totalPaid,
+  totalOnSite,
+  totalBudget,
+  days,
+  type BudgetItem,
+} from "@/data/trip";
+import { CHF_PER_EUR, formatBudgetMoney, type TripCurrency } from "@/lib/currency";
 import ParisTravelInsights from "./ParisTravelInsights";
 
+function CurrencyToggle({
+  currency,
+  onChange,
+}: {
+  currency: TripCurrency;
+  onChange: (c: TripCurrency) => void;
+}) {
+  return (
+    <div
+      className="inline-flex rounded-full border border-glass-border p-0.5 bg-white/[0.03]"
+      role="group"
+      aria-label="Budget in Euro oder Schweizer Franken"
+    >
+      {(["EUR", "CHF"] as const).map((c) => (
+        <button
+          key={c}
+          type="button"
+          onClick={() => onChange(c)}
+          aria-pressed={currency === c}
+          className={`px-3.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.2em] rounded-full transition-all duration-200 ${
+            currency === c
+              ? "bg-gold/25 text-gold shadow-sm"
+              : "text-text-muted hover:text-text-secondary"
+          }`}
+        >
+          {c}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 const eventCount = days.reduce((s, d) => s + d.events.filter(e => e.transport === "none").length, 0);
+
+function paidLineKey(item: BudgetItem) {
+  if (item.flightRoute) {
+    const { origin, destination } = item.flightRoute;
+    return `flight-${origin.iata}-${destination.iata}-${item.amount}`;
+  }
+  return item.label;
+}
+
+function PaidBudgetLabel({ item }: { item: BudgetItem }) {
+  const r = item.flightRoute;
+  if (!r) {
+    return <span className="text-xs text-text-secondary leading-snug">{item.label}</span>;
+  }
+  const a11y = `Flug von ${r.origin.city} (${r.origin.iata}) nach ${r.destination.city} (${r.destination.iata}), ${r.vendor}`;
+  return (
+    <div className="min-w-0 text-left">
+      <span className="sr-only">{a11y}</span>
+      <div className="flex items-center gap-1.5" aria-hidden>
+        <span className="inline-flex min-w-[2.75rem] justify-center rounded border border-gold/25 bg-gradient-to-b from-gold/[0.12] to-gold/[0.04] px-2 py-0.5 font-mono text-[11px] font-semibold tabular-nums tracking-[0.14em] text-gold">
+          {r.origin.iata}
+        </span>
+        <ArrowRight className="h-3.5 w-3.5 shrink-0 text-gold/45" strokeWidth={2} />
+        <span className="inline-flex min-w-[2.75rem] justify-center rounded border border-gold/25 bg-gradient-to-b from-gold/[0.12] to-gold/[0.04] px-2 py-0.5 font-mono text-[11px] font-semibold tabular-nums tracking-[0.14em] text-gold">
+          {r.destination.iata}
+        </span>
+      </div>
+      <p className="mt-1 text-[10px] leading-snug text-text-muted">
+        <span className="text-text-secondary/90">{r.origin.city}</span>
+        <span className="mx-1.5 text-text-muted/40">·</span>
+        <span className="text-text-secondary/90">{r.destination.city}</span>
+        <span className="mx-2 text-text-muted/35">·</span>
+        <span className="text-text-muted/80">{r.vendor}</span>
+      </p>
+    </div>
+  );
+}
 
 export default function BudgetSection() {
   const [showPaidDetails, setShowPaidDetails] = useState(true);
   const [showOnSiteDetails, setShowOnSiteDetails] = useState(true);
+  const [currency, setCurrency] = useState<TripCurrency>("EUR");
 
   const paidPercent = Math.round((totalPaid / totalBudget) * 100);
 
@@ -45,6 +124,18 @@ export default function BudgetSection() {
           <h2 className="text-3xl sm:text-5xl font-light tracking-tight">
             <span className="text-gradient-gold">Le Compte</span>
           </h2>
+          <div className="flex flex-col items-center gap-2 mt-4">
+            <CurrencyToggle currency={currency} onChange={setCurrency} />
+            {currency === "CHF" && (
+              <p className="text-[10px] text-text-muted tracking-wide">
+                Umrechnung 1 EUR ≈ {CHF_PER_EUR.toLocaleString("de-DE", {
+                  minimumFractionDigits: 3,
+                  maximumFractionDigits: 3,
+                })}{" "}
+                CHF
+              </p>
+            )}
+          </div>
           <p className="text-text-secondary text-sm sm:text-base font-light mt-3 tracking-wide">
             3 Tage · {eventCount} Aktivitäten · 1 Highlight
           </p>
@@ -102,7 +193,9 @@ export default function BudgetSection() {
                 </div>
                 <div>
                   <p className="text-xs text-accent-green/70 uppercase tracking-wider font-medium">Bezahlt</p>
-                  <p className="text-lg font-light text-text-primary tabular-nums mt-0.5">~{totalPaid}€</p>
+                  <p className="text-lg font-light text-text-primary tabular-nums mt-0.5">
+                    ~{formatBudgetMoney(totalPaid, currency)}
+                  </p>
                 </div>
               </div>
               <ChevronDown
@@ -118,11 +211,16 @@ export default function BudgetSection() {
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="px-5 pb-5 space-y-2.5 border-t border-glass-border pt-4">
+                  <div className="px-5 pb-5 space-y-3.5 border-t border-glass-border pt-4">
                     {budgetPaid.map((item) => (
-                      <div key={item.label} className="flex justify-between items-center">
-                        <span className="text-xs text-text-secondary">{item.label}</span>
-                        <span className="text-xs font-mono text-text-secondary tabular-nums">{item.amount}€</span>
+                      <div
+                        key={paidLineKey(item)}
+                        className="flex justify-between items-start gap-4"
+                      >
+                        <PaidBudgetLabel item={item} />
+                        <span className="text-xs font-mono text-text-secondary tabular-nums shrink-0 pt-0.5">
+                          {formatBudgetMoney(item.amount, currency)}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -149,7 +247,9 @@ export default function BudgetSection() {
                 </div>
                 <div>
                   <p className="text-xs text-gold/70 uppercase tracking-wider font-medium">Vor Ort</p>
-                  <p className="text-lg font-light text-text-primary tabular-nums mt-0.5">~{totalOnSite}€</p>
+                  <p className="text-lg font-light text-text-primary tabular-nums mt-0.5">
+                    ~{formatBudgetMoney(totalOnSite, currency)}
+                  </p>
                 </div>
               </div>
               <ChevronDown
@@ -169,7 +269,9 @@ export default function BudgetSection() {
                     {budgetOnSite.map((item) => (
                       <div key={item.label} className="flex justify-between items-center">
                         <span className="text-xs text-text-secondary">{item.label}</span>
-                        <span className="text-xs font-mono text-text-secondary tabular-nums">~{item.amount}€</span>
+                        <span className="text-xs font-mono text-text-secondary tabular-nums">
+                          ~{formatBudgetMoney(item.amount, currency)}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -190,7 +292,7 @@ export default function BudgetSection() {
           <div className="glass rounded-2xl p-6 inline-flex flex-col items-center border border-gold/[0.06]">
             <p className="text-[10px] text-text-muted uppercase tracking-[0.2em] mb-2">Gesamtbudget</p>
             <p className="text-3xl sm:text-4xl font-light text-gradient-gold tabular-nums">
-              ~{totalBudget}€
+              ~{formatBudgetMoney(totalBudget, currency)}
             </p>
             <p className="text-[11px] text-text-muted mt-3 italic tracking-wide">
               Orientierungswerte — Paris-Preisniveau inklusive.
