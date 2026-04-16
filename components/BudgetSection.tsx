@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronDown, CheckCircle2, Clock } from "lucide-react";
+import { ChevronDown, CheckCircle2, Clock } from "lucide-react";
 import {
   budgetPaid,
   budgetOnSite,
@@ -62,27 +62,11 @@ function PaidBudgetLabel({ item }: { item: BudgetItem }) {
   if (!r) {
     return <span className="text-xs text-text-secondary leading-snug">{item.label}</span>;
   }
-  const a11y = `Flug von ${r.origin.city} (${r.origin.iata}) nach ${r.destination.city} (${r.destination.iata}), ${r.vendor}`;
   return (
-    <div className="min-w-0 text-left">
-      <span className="sr-only">{a11y}</span>
-      <div className="flex items-center gap-1.5" aria-hidden>
-        <span className="inline-flex min-w-[2.75rem] justify-center rounded border border-gold/25 bg-gradient-to-b from-gold/[0.12] to-gold/[0.04] px-2 py-0.5 font-mono text-[11px] font-semibold tabular-nums tracking-[0.14em] text-gold">
-          {r.origin.iata}
-        </span>
-        <ArrowRight className="h-3.5 w-3.5 shrink-0 text-gold/45" strokeWidth={2} />
-        <span className="inline-flex min-w-[2.75rem] justify-center rounded border border-gold/25 bg-gradient-to-b from-gold/[0.12] to-gold/[0.04] px-2 py-0.5 font-mono text-[11px] font-semibold tabular-nums tracking-[0.14em] text-gold">
-          {r.destination.iata}
-        </span>
-      </div>
-      <p className="mt-1 text-[10px] leading-snug text-text-muted">
-        <span className="text-text-secondary/90">{r.origin.city}</span>
-        <span className="mx-1.5 text-text-muted/40">·</span>
-        <span className="text-text-secondary/90">{r.destination.city}</span>
-        <span className="mx-2 text-text-muted/35">·</span>
-        <span className="text-text-muted/80">{r.vendor}</span>
-      </p>
-    </div>
+    <span className="text-xs text-text-secondary leading-snug">
+      {r.origin.iata} → {r.destination.iata}
+      <span className="text-text-muted/60"> · {r.vendor}</span>
+    </span>
   );
 }
 
@@ -90,6 +74,16 @@ export default function BudgetSection() {
   const [showPaidDetails, setShowPaidDetails] = useState(true);
   const [showOnSiteDetails, setShowOnSiteDetails] = useState(true);
   const [currency, setCurrency] = useState<TripCurrency>("EUR");
+
+  useEffect(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const lang = navigator.language;
+      if (tz === "Europe/Zurich" || lang.endsWith("-CH")) {
+        setCurrency("CHF");
+      }
+    } catch {}
+  }, []);
 
   const paidPercent = Math.round((totalPaid / totalBudget) * 100);
 
