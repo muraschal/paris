@@ -20,10 +20,10 @@ function SnapSetup() {
 
     const snap = new Snap(lenis, {
       type: "proximity",
-      distanceThreshold: "40%",
-      debounce: 200,
+      distanceThreshold: "35%",
+      debounce: 150,
       easing: LUXURY_EASING,
-      duration: 1.4,
+      duration: 1.2,
     });
 
     const cleanups: (() => void)[] = [];
@@ -59,10 +59,10 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       ref={lenisRef}
       root
       options={{
-        lerp: 0.08,
-        duration: 1.4,
+        lerp: 0.09,
+        duration: 1.2,
         smoothWheel: true,
-        wheelMultiplier: 0.8,
+        wheelMultiplier: 1,
         touchMultiplier: 1.5,
         autoRaf: false,
         easing: LUXURY_EASING,
